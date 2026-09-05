@@ -71,7 +71,7 @@ export default function UserLoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-[#f8f9fa] px-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
         <div className="bg-primary p-8 pt-10 text-center text-white flex flex-col items-center justify-center">
-          <img src="/logo_vertical_gold.png" alt="Miti User Login Logo" className="h-[130px] w-auto object-contain mb-4" />
+          <img src="/logo_login_gold.png" alt="Miti User Login Logo" className="h-[130px] w-auto object-contain mb-4" />
           <p className="text-primary-light/80 text-sm font-medium tracking-wide">Developer Platform</p>
         </div>
 
