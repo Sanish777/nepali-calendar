@@ -41,7 +41,9 @@ export default function Navbar() {
 
   if (pathname?.startsWith("/admin")) return null;
 
+
   return (
+    <>
     <nav className="sticky top-0 z-50 bg-primary text-white shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-[64px]">
@@ -49,7 +51,7 @@ export default function Navbar() {
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center group transition-opacity hover:opacity-90">
               <div className="h-[36px] md:h-[46px] flex items-center justify-center">
-                <img src="/logo_horizontal_gold.png" alt="Miti Logo" className="h-full w-auto object-contain" />
+                <img src="/logo_nav_gold.png" alt="Miti Logo" className="h-full w-auto object-contain" />
               </div>
             </Link>
           </div>
@@ -79,8 +81,6 @@ export default function Navbar() {
               <RefreshCw className="w-4 h-4" />
               Converter
             </Link>
-            
-            
           </div>
           )}
 
@@ -98,7 +98,7 @@ export default function Navbar() {
                   onClick={() => setShowDropdown(!showDropdown)}
                   className="flex items-center gap-3 px-3 py-1.5 bg-white rounded-xl transition shadow-sm text-slate-900"
                 >
-                  <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-primary font-bold text-xs">
+                  <div className="w-8 h-8 md:w-6 md:h-6 rounded-full bg-slate-100 flex items-center justify-center text-primary font-bold text-sm md:text-xs">
                     {user.name?.charAt(0) || 'U'}
                   </div>
                   <div className="text-left hidden sm:block">
@@ -124,5 +124,33 @@ export default function Navbar() {
         </div>
       </div>
     </nav>
+
+    {/* Mobile Bottom Navigation */}
+    {(!user || user.role !== "ADMIN") && (
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-50 pb-[env(safe-area-inset-bottom)]">
+        <div className="flex items-center justify-around h-[64px]">
+          <Link
+            href="/"
+            className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition ${
+              pathname === "/" ? "text-primary" : "text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            <Calendar className={`w-5 h-5 ${pathname === "/" ? "fill-primary/10" : ""}`} />
+            <span className="text-[10px] font-semibold">Calendar</span>
+          </Link>
+          <Link
+            href="/converter"
+            className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition ${
+              pathname.startsWith("/converter") ? "text-primary" : "text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            <RefreshCw className={`w-5 h-5 ${pathname.startsWith("/converter") ? "fill-primary/10" : ""}`} />
+            <span className="text-[10px] font-semibold">Converter</span>
+          </Link>
+        </div>
+      </div>
+    )}
+    </>
   );
+
 }

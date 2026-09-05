@@ -28,21 +28,33 @@ export async function GET(req: NextRequest) {
 
     const results = [];
 
-    // Sync current month
-    const currentRes = await syncMonthCalendar({
+    // Sync current month for HAMROPATRO
+    results.push(await syncMonthCalendar({
       yearBs: currentYear,
       monthBs: currentMonth,
       source: "HAMROPATRO",
-    });
-    results.push(currentRes);
+    }));
 
-    // Sync next month
-    const nextRes = await syncMonthCalendar({
+    // Sync next month for HAMROPATRO
+    results.push(await syncMonthCalendar({
       yearBs: nextYear,
       monthBs: nextMonth,
       source: "HAMROPATRO",
-    });
-    results.push(nextRes);
+    }));
+
+    // Sync current month for NEPALICALENDAR (rat32)
+    results.push(await syncMonthCalendar({
+      yearBs: currentYear,
+      monthBs: currentMonth,
+      source: "NEPALICALENDAR",
+    }));
+
+    // Sync next month for NEPALICALENDAR (rat32)
+    results.push(await syncMonthCalendar({
+      yearBs: nextYear,
+      monthBs: nextMonth,
+      source: "NEPALICALENDAR",
+    }));
 
     return NextResponse.json({
       success: true,

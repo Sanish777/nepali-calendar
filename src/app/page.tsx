@@ -14,7 +14,7 @@ export default async function Home() {
   }
 
   return (
-    <div className="bg-transparent min-h-screen pt-8 pb-16">
+    <div className="bg-transparent min-h-screen pt-8 pb-24 md:pb-16">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <NepaliCalendar />
       </div>

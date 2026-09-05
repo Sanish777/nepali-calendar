@@ -85,7 +85,7 @@ export default function MitiConverter() {
   const days = Array.from({ length: mode === "BS_TO_AD" ? 32 : 31 }, (_, i) => i + 1);
 
   return (
-    <div className="bg-[#f8f9fa] font-sans pt-8 pb-20">
+    <div className="bg-[#f8f9fa] font-sans pt-8 pb-28 md:pb-20">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         {/* Page Title */}
         <div>
