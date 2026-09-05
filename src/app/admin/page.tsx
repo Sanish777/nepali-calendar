@@ -574,7 +574,7 @@ export default function AdminPage() {
               </button>
               <Link href="/" className="flex items-center gap-2 group transition-opacity hover:opacity-90">
                 <div className="h-[28px] md:h-[32px] flex items-center justify-center">
-                  <img src="/logo_horizontal_gold.png" alt="Miti Logo" className="h-full w-auto object-contain" />
+                  <img src="/logo_nav_gold.png" alt="Miti Logo" className="h-full w-auto object-contain" />
                 </div>
                 <span className="font-extrabold text-[14px] tracking-tight text-white/90 hidden sm:block ml-1 border-l border-white/20 pl-2">
                   Admin
