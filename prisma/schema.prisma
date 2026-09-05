@@ -1,0 +1,211 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+model User {
+  id               String           @id @default(cuid())
+  email            String           @unique
+  passwordHash     String
+  name             String
+  organizationName String?
+  role             Role             @default(USER)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  subscription     Subscription?
+  apiKeys          ApiKey[]
+  createdEvents    CalendarEvent[]
+}
+
+model SubscriptionPlan {
+  id                  String         @id @default(cuid())
+  code                String         @unique // FREE, STARTER, PRO, ENTERPRISE
+  name                String
+  description         String?
+  priceNpr            Int            @default(0)
+  priceUsd            Int            @default(0)
+  requestsPerMinute   Int            @default(60)
+  monthlyRequestLimit Int            @default(1000)
+  features            String[]
+  isActive            Boolean        @default(true)
+  subscriptions       Subscription[]
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+}
+
+model Subscription {
+  id                 String           @id @default(cuid())
+  userId             String           @unique
+  user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId             String
+  plan               SubscriptionPlan @relation(fields: [planId], references: [id])
+  status             String           @default("ACTIVE") // ACTIVE, CANCELLED, EXPIRED
+  customRpm          Int?             // Admin custom rate limit override
+  customMonthlyLimit Int?             // Admin custom monthly quota override
+  currentPeriodStart DateTime         @default(now())
+  currentPeriodEnd   DateTime
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+}
+
+model ApiKey {
+  id                 String         @id @default(cuid())
+  userId             String
+  user               User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name               String
+  key                String         @unique // e.g. np_live_...
+  keyPrefix          String         // e.g. np_live_abc...
+  rateLimitPerMinute Int?           // Custom override for this key
+  monthlyLimit       Int?           // Custom override for this key
+  totalUsage         Int            @default(0)
+  monthlyUsage       Int            @default(0)
+  lastUsedAt         DateTime?
+  isActive           Boolean        @default(true)
+  expiresAt          DateTime?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  usageLogs          ApiUsageLog[]
+
+  @@index([key])
+  @@index([userId])
+}
+
+model ApiUsageLog {
+  id             String    @id @default(cuid())
+  apiKeyId       String
+  apiKey         ApiKey    @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  endpoint       String
+  method         String    @default("GET")
+  statusCode     Int
+  responseTimeMs Int
+  ipAddress      String?
+  userAgent      String?
+  timestamp      DateTime  @default(now())
+
+  @@index([apiKeyId, timestamp])
+  @@index([timestamp])
+}
+
+model CalendarDate {
+  id                 String              @id @default(cuid())
+  source             String              @default("HAMROPATRO") // HAMROPATRO, NEPALICALENDAR
+  bsYear             Int
+  bsMonth            Int
+  bsDay              Int
+  adDate             DateTime
+  adYear             Int
+  adMonth            Int
+  adDay              Int
+  dayOfWeek          Int                 // 0=Sunday, 6=Saturday
+  dayOfWeekNp        String
+  dayOfWeekEn        String
+  bsDayNp            String
+  adDayNp            String
+  tithiNameNp        String?
+  tithiNameEn        String?
+  tithiShort         String?
+  nakshatra          String?
+  nakshatraIndex     Int?
+  yoga               String?
+  yogaIndex          Int?
+  karana             String?
+  karanaIndex        Int?
+  paksha             String?             // Shukla, Krishna
+  rashi              String?
+  sunrise            String?
+  sunset             String?
+  moonrise           String?
+  moonset            String?
+  isHoliday          Boolean             @default(false)
+  holidayReason      String?
+  isWeekend          Boolean             @default(false)
+  verificationStatus String              @default("VERIFIED") // VERIFIED, PROVISIONAL
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  events             CalendarEventDate[]
+
+  @@unique([source, bsYear, bsMonth, bsDay])
+  @@index([adYear, adMonth, adDay])
+  @@index([bsYear, bsMonth])
+}
+
+model CalendarEvent {
+  id              String              @id @default(cuid())
+  code            String?
+  titleNp         String
+  titleEn         String
+  description     String?
+  eventType       String              @default("FESTIVAL") // FESTIVAL, PUBLIC_HOLIDAY, OBSERVANCE, VRATA, CUSTOM
+  isPublicHoliday Boolean             @default(false)
+  recurrence      String              @default("ONE_OFF")  // RECURRING, ONE_OFF
+  bsYear          Int?
+  bsMonth         Int
+  bsDay           Int
+  source          String              @default("HAMROPATRO") // HAMROPATRO, NEPALICALENDAR, MANUAL_ADMIN, SYSTEM
+  status          String              @default("PUBLISHED") // PUBLISHED, DRAFT, ARCHIVED
+  imageUrl        String?
+  articleUrl      String?
+  createdById     String?
+  createdBy       User?               @relation(fields: [createdById], references: [id])
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  dateLinks       CalendarEventDate[]
+
+  @@index([bsYear, bsMonth, bsDay])
+  @@index([bsMonth, bsDay])
+}
+
+model CalendarEventDate {
+  id      String        @id @default(cuid())
+  dateId  String
+  date    CalendarDate  @relation(fields: [dateId], references: [id], onDelete: Cascade)
+  eventId String
+  event   CalendarEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([dateId, eventId])
+}
+
+model DateOverride {
+  id                String   @id @default(cuid())
+  bsYear            Int
+  bsMonth           Int
+  bsDay             Int
+  customTithiNp     String?
+  customTithiEn     String?
+  isHolidayOverride Boolean?
+  holidayReason     String?
+  notes             String?
+  updatedById       String?
+  updatedAt         DateTime @updatedAt
+
+  @@unique([bsYear, bsMonth, bsDay])
+}
+
+model SystemSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}
+
+model ScraperJobLog {
+  id           String    @id @default(cuid())
+  source       String    // HAMROPATRO, NEPALIPATRO, ALL
+  targetYear   Int
+  targetMonth  Int?
+  status       String    // RUNNING, SUCCESS, FAILED
+  itemsSynced  Int       @default(0)
+  errorDetails String?
+  startedAt    DateTime  @default(now())
+  completedAt  DateTime?
+}
