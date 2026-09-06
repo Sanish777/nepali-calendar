@@ -4,6 +4,10 @@ import { getTodayDate } from "@/lib/nepali-calendar/converter";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(req: NextRequest) {
+  // Vercel cron jobs send this header; allows the scheduled run to authenticate
+  // without committing the CRON_SECRET.
+  const isVercelCron = req.headers.get("x-vercel-cron") === "1";
+
   const url = new URL(req.url);
   const secretHeader = req.headers.get("authorization");
   const secretParam = url.searchParams.get("secret");
@@ -11,6 +15,7 @@ export async function GET(req: NextRequest) {
   const expectedSecret = process.env.CRON_SECRET || "miti-cron-sync-secret-key";
 
   const isAuthorized =
+    isVercelCron ||
     secretParam === expectedSecret ||
     (secretHeader && secretHeader === `Bearer ${expectedSecret}`);
 
