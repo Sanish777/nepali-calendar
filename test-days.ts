@@ -1,4 +1,4 @@
-import { BS_CALENDAR_DATA } from "./src/lib/nepali-calendar/bs-data";
+import { BS_CALENDAR_DATA } from "./src/lib/nepcalendarscrape/bs-data";
 let total = 0;
 for(let y=2055; y<=2082; y++){
   total += BS_CALENDAR_DATA[y].reduce((a,b)=>a+b,0);

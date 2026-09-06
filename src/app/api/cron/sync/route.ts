@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { syncMonthCalendar } from "@/lib/scraper/reconciler";
-import { getTodayDate } from "@/lib/nepali-calendar/converter";
+import { getTodayDate } from "@/lib/nepcalendarscrape/converter";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(req: NextRequest) {
@@ -33,10 +33,10 @@ export async function GET(req: NextRequest) {
     const nextYear = currentMonth === 12 ? currentYear + 1 : currentYear;
 
     const targets = [
-      { yearBs: currentYear, monthBs: currentMonth, source: "HAMROPATRO" as const },
-      { yearBs: nextYear, monthBs: nextMonth, source: "HAMROPATRO" as const },
-      { yearBs: currentYear, monthBs: currentMonth, source: "NEPALICALENDAR" as const },
-      { yearBs: nextYear, monthBs: nextMonth, source: "NEPALICALENDAR" as const },
+      { yearBs: currentYear, monthBs: currentMonth, source: "PATROSCRAPE" as const },
+      { yearBs: nextYear, monthBs: nextMonth, source: "PATROSCRAPE" as const },
+      { yearBs: currentYear, monthBs: currentMonth, source: "NEPCALENDARSCRAPE" as const },
+      { yearBs: nextYear, monthBs: nextMonth, source: "NEPCALENDARSCRAPE" as const },
     ];
 
     // Sync independently so one source failing (e.g. anti-bot) never blocks others

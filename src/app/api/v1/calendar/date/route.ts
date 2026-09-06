@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateApiKey, logApiUsage, withRateLimitHeaders } from "@/lib/auth/api-key";
-import { bsToAd, adToBs } from "@/lib/nepali-calendar/converter";
+import { bsToAd, adToBs } from "@/lib/nepcalendarscrape/converter";
 import { prisma } from "@/lib/prisma";
-import { calculatePanchanga } from "@/lib/nepali-calendar/panchanga";
+import { calculatePanchanga } from "@/lib/nepcalendarscrape/panchanga";
 import { getActiveCalendarSource } from "@/lib/settings";
 
 export async function GET(req: NextRequest) {

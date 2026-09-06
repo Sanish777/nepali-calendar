@@ -1,13 +1,13 @@
 import { prisma } from "./prisma";
 
 export const CALENDAR_SOURCES = {
-  HAMROPATRO: "HAMROPATRO",
-  NEPALICALENDAR: "NEPALICALENDAR",
+  PATROSCRAPE: "PATROSCRAPE",
+  NEPCALENDARSCRAPE: "NEPCALENDARSCRAPE",
 } as const;
 
 export type CalendarSource = keyof typeof CALENDAR_SOURCES;
 
-export const DEFAULT_CALENDAR_SOURCE: CalendarSource = "HAMROPATRO";
+export const DEFAULT_CALENDAR_SOURCE: CalendarSource = "PATROSCRAPE";
 
 const SOURCE_KEY = "defaultCalendarSource";
 

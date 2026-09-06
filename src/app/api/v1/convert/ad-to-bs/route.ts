@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateApiKey, logApiUsage, withRateLimitHeaders } from "@/lib/auth/api-key";
-import { adToBs } from "@/lib/nepali-calendar/converter";
+import { adToBs } from "@/lib/nepcalendarscrape/converter";
 
 export async function GET(req: NextRequest) {
   const startTime = Date.now();

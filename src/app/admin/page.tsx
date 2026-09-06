@@ -4,7 +4,7 @@ import MitiLoader from "@/components/MitiLoader";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import NepaliCalendar from "@/components/NepaliCalendar";
+import NepCalendarScrape from "@/components/NepCalendarScrape";
 import MitiConverter from "@/components/MitiConverter";
 import {
   Shield,
@@ -327,8 +327,8 @@ export default function AdminPage() {
   const [scraperTotalPages, setScraperTotalPages] = useState(1);
   const [scraperTotal, setScraperTotal] = useState(0);
   const [scraperStatusFilter, setScraperStatusFilter] = useState("");
-  const [scraperSource, setScraperSource] = useState("HAMROPATRO");
-  const [activeSource, setActiveSource] = useState("HAMROPATRO");
+  const [scraperSource, setScraperSource] = useState("PATROSCRAPE");
+  const [activeSource, setActiveSource] = useState("PATROSCRAPE");
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [settingsMessage, setSettingsMessage] = useState<string | null>(null);
   const [settingsDirty, setSettingsDirty] = useState(false);
@@ -1325,7 +1325,7 @@ export default function AdminPage() {
           {/* TAB: View Calendar (public) */}
           {activeTab === "view" && (
             <div className="rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-              <NepaliCalendar />
+              <NepCalendarScrape />
             </div>
           )}
 
@@ -1776,8 +1776,8 @@ export default function AdminPage() {
                       onChange={(e) => { setActiveSource(e.target.value); setSettingsDirty(true); }}
                       className="w-full px-3 py-2 text-sm font-semibold bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-200 focus:border-rose-400 outline-none"
                     >
-                      <option value="HAMROPATRO">Hamro Patro</option>
-                      <option value="NEPALICALENDAR">Nepali Calendar (rat32)</option>
+                      <option value="PATROSCRAPE">Patro Scrape</option>
+                      <option value="NEPCALENDARSCRAPE">Nep Calendar Scrape (rat32)</option>
                     </select>
                   </div>
                   <div>
@@ -1802,11 +1802,11 @@ export default function AdminPage() {
                   <h4 className="text-xs font-bold text-slate-700 mb-2">Sources</h4>
                   <ul className="text-[11px] text-slate-500 space-y-1.5">
                     <li>
-                      <span className="font-bold text-slate-700">HAMROPATRO</span> — scraped from hamropatro.com
+                      <span className="font-bold text-slate-700">PATROSCRAPE</span> — scraped from hamropatro.com
                       (tithi, festivals, panchanga in Nepali + English).
                     </li>
                     <li>
-                      <span className="font-bold text-slate-700">NEPALICALENDAR</span> — scraped from
+                      <span className="font-bold text-slate-700">NEPCALENDARSCRAPE</span> — scraped from
                       nepalicalendar.rat32.com (site is behind an anti-bot challenge handled automatically).
                       English tithi/festival names; festival titles fall back to English where Devanagari is not
                       published.
@@ -1856,8 +1856,8 @@ export default function AdminPage() {
                       onChange={(e) => setScraperSource(e.target.value)}
                       className="w-full px-3 py-2 text-sm font-semibold bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-200 focus:border-rose-400 outline-none"
                     >
-                      <option value="HAMROPATRO">Hamro Patro</option>
-                      <option value="NEPALICALENDAR">Nepali Calendar (rat32)</option>
+                      <option value="PATROSCRAPE">Patro Scrape</option>
+                      <option value="NEPCALENDARSCRAPE">Nep Calendar Scrape (rat32)</option>
                     </select>
                   </div>
                   <div>

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateApiKey, logApiUsage, withRateLimitHeaders } from "@/lib/auth/api-key";
 import { prisma } from "@/lib/prisma";
-import { BS_CALENDAR_DATA, BS_MONTHS, toDevanagari } from "@/lib/nepali-calendar/bs-data";
-import { getTodayDate } from "@/lib/nepali-calendar/converter";
+import { BS_CALENDAR_DATA, BS_MONTHS, toDevanagari } from "@/lib/nepcalendarscrape/bs-data";
+import { getTodayDate } from "@/lib/nepcalendarscrape/converter";
 import { getActiveCalendarSource } from "@/lib/settings";
 
 export async function GET(req: NextRequest) {

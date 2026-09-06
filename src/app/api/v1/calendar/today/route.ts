@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateApiKey, logApiUsage, withRateLimitHeaders } from "@/lib/auth/api-key";
-import { getTodayDate } from "@/lib/nepali-calendar/converter";
+import { getTodayDate } from "@/lib/nepcalendarscrape/converter";
 import { prisma } from "@/lib/prisma";
-import { calculatePanchanga } from "@/lib/nepali-calendar/panchanga";
+import { calculatePanchanga } from "@/lib/nepcalendarscrape/panchanga";
 import { getActiveCalendarSource } from "@/lib/settings";
 
 // Today's payload only changes when an admin syncs/overrides data, so a short

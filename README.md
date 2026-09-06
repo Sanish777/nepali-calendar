@@ -29,7 +29,7 @@ The platform provides verified Bikram Sambat (वि.सं.) and Anno Domini (A
      - `X-RateLimit-Monthly-Limit`
      - `X-RateLimit-Monthly-Remaining`
 
-3. **Hamro Patro Web Scraper & Reconciler**:
+3. **Patro Scrape Web Scraper & Reconciler**:
    - Automated scraper engine extracting server-rendered month payloads, tithis, and festival items from `https://www.hamropatro.com/en`.
    - Reconciler that deduplicates, validates against canonical astronomical equations, merges festival descriptions, and handles date overrides.
    - On-demand admin trigger + automated background cron sync endpoint (`/api/cron/sync`).
@@ -183,7 +183,7 @@ curl -X GET "http://localhost:3000/api/v1/panchanga?bs_year=2083&bs_month=5&bs_d
 
 ### 6. Embeddable JavaScript Widget
 ```html
-<div id="nepali-calendar-widget"></div>
+<div id="nep-calendar-scrape-widget"></div>
 <script src="http://localhost:3000/api/v1/widget/script.js?api_key=np_live_demo1234567890abcdef12345678"></script>
 ```
 
@@ -231,12 +231,13 @@ nepali-calendar-api/
 │       ├── auth/
 │       │   ├── api-key.ts         # Key validation, rate-limiter & usage logger
 │       │   └── jwt.ts             # JWT authentication
-│       ├── nepali-calendar/
+│       ├── nepcalendarscrape/
 │       │   ├── bs-data.ts         # Canonical BS months, weekdays, tithis
 │       │   ├── converter.ts       # Accurate BS <-> AD conversion engine
 │       │   └── panchanga.ts       # Tithi, Nakshatra, Yoga, Karana & Sun times
 │       ├── scraper/
-│       │   ├── hamro-scraper.ts   # Scraper for hamropatro.com
+│       │   ├── patroscrape-scraper.ts        # Scraper for hamropatro.com
+│       │   ├── nepcalendarscrape-scraper.ts  # Scraper for nepalicalendar.rat32.com
 │       │   └── reconciler.ts      # Database sync & reconciler
 │       └── seed.ts                # Database seed script
 ```

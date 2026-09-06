@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateApiKey, logApiUsage, withRateLimitHeaders } from "@/lib/auth/api-key";
-import { bsToAd, adToBs, getTodayDate } from "@/lib/nepali-calendar/converter";
-import { calculatePanchanga } from "@/lib/nepali-calendar/panchanga";
+import { bsToAd, adToBs, getTodayDate } from "@/lib/nepcalendarscrape/converter";
+import { calculatePanchanga } from "@/lib/nepcalendarscrape/panchanga";
 import { prisma } from "@/lib/prisma";
 import { getActiveCalendarSource } from "@/lib/settings";
 

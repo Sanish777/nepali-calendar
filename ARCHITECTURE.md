@@ -100,7 +100,7 @@ graph TD
     
     subgraph Internal Lib (src/lib/)
         AuthLib[Auth & JWT Lib\n(lib/auth)]
-        PanchangaLib[Panchanga Engine\n(lib/nepali-calendar)]
+        PanchangaLib[Panchanga Engine\n(lib/nepcalendarscrape)]
         ScraperLib[Scraper & Reconciler\n(lib/scraper)]
         PrismaClient[Prisma Client\n(lib/prisma.ts)]
     end
@@ -146,7 +146,7 @@ When making modifications or adding features to this codebase, AI agents should 
 ### Core Architectural Rules
 1. **Date Logic Isolation**:
    - NEVER hardcode BS-to-AD conversion logic inside Next.js route handlers (`app/api/...`).
-   - ALWAYS use the utilities in `src/lib/nepali-calendar/converter.ts` or `bs-data.ts`.
+   - ALWAYS use the utilities in `src/lib/nepcalendarscrape/converter.ts` or `bs-data.ts`.
 
 2. **Rate Limiting & Authentication**:
    - Any new commercial endpoint under `app/api/v1/` MUST be protected by the existing API key validation and rate-limiting middleware.

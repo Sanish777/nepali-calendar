@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateApiKey, logApiUsage, withRateLimitHeaders } from "@/lib/auth/api-key";
 import { prisma } from "@/lib/prisma";
-import { BS_CALENDAR_DATA, BS_MONTHS, WEEKDAYS, toDevanagari } from "@/lib/nepali-calendar/bs-data";
-import { bsToAd, getTodayDate } from "@/lib/nepali-calendar/converter";
+import { BS_CALENDAR_DATA, BS_MONTHS, WEEKDAYS, toDevanagari } from "@/lib/nepcalendarscrape/bs-data";
+import { bsToAd, getTodayDate } from "@/lib/nepcalendarscrape/converter";
 import { syncMonthCalendar } from "@/lib/scraper/reconciler";
 import { getActiveCalendarSource } from "@/lib/settings";
 

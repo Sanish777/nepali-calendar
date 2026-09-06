@@ -96,7 +96,7 @@ model ApiUsageLog {
 
 model CalendarDate {
   id                 String              @id @default(cuid())
-  source             String              @default("HAMROPATRO") // HAMROPATRO, NEPALICALENDAR
+  source             String              @default("PATROSCRAPE") // PATROSCRAPE, NEPCALENDARSCRAPE
   bsYear             Int
   bsMonth            Int
   bsDay              Int
@@ -149,7 +149,7 @@ model CalendarEvent {
   bsYear          Int?
   bsMonth         Int
   bsDay           Int
-  source          String              @default("HAMROPATRO") // HAMROPATRO, NEPALICALENDAR, MANUAL_ADMIN, SYSTEM
+  source          String              @default("PATROSCRAPE") // PATROSCRAPE, NEPCALENDARSCRAPE, MANUAL_ADMIN, SYSTEM
   status          String              @default("PUBLISHED") // PUBLISHED, DRAFT, ARCHIVED
   imageUrl        String?
   articleUrl      String?
@@ -199,7 +199,7 @@ model SystemSetting {
 
 model ScraperJobLog {
   id           String    @id @default(cuid())
-  source       String    // HAMROPATRO, NEPALIPATRO, ALL
+  source       String    // PATROSCRAPE, NEPCALENDARSCRAPE, MANUAL_ADMIN, SYSTEM
   targetYear   Int
   targetMonth  Int?
   status       String    // RUNNING, SUCCESS, FAILED

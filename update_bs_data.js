@@ -15,9 +15,9 @@ for (let year = 2000; year <= 2090; year++) {
 }
 bsDataStr += "};\n";
 
-let bsDataFile = fs.readFileSync("src/lib/nepali-calendar/bs-data.ts", "utf8");
+let bsDataFile = fs.readFileSync("src/lib/nepcalendarscrape/bs-data.ts", "utf8");
 bsDataFile = bsDataFile.replace(/export const BS_CALENDAR_DATA: Record<number, number\[\]> = {[\s\S]*?};/, bsDataStr);
-fs.writeFileSync("src/lib/nepali-calendar/bs-data.ts", bsDataFile);
+fs.writeFileSync("src/lib/nepcalendarscrape/bs-data.ts", bsDataFile);
 
 
 let anchorStr = "export const BS_YEAR_ANCHORS: Record<number, string> = {\n";
@@ -35,8 +35,8 @@ for (let year = 2000; year <= 2090; year++) {
 }
 anchorStr += "};\n";
 
-let converterFile = fs.readFileSync("src/lib/nepali-calendar/converter.ts", "utf8");
+let converterFile = fs.readFileSync("src/lib/nepcalendarscrape/converter.ts", "utf8");
 converterFile = converterFile.replace(/export const BS_YEAR_ANCHORS: Record<number, string> = {[\s\S]*?};/, anchorStr);
-fs.writeFileSync("src/lib/nepali-calendar/converter.ts", converterFile);
+fs.writeFileSync("src/lib/nepcalendarscrape/converter.ts", converterFile);
 
 console.log("Updated both files successfully.");

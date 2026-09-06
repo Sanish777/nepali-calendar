@@ -1,9 +1,9 @@
 import { prisma } from "../prisma";
-import { scrapeHamroPatroMonth } from "./hamro-scraper";
-import { scrapeNepaliCalendarMonth } from "./nepalicalendar-scraper";
-import { bsToAd } from "../nepali-calendar/converter";
-import { WEEKDAYS, toDevanagari } from "../nepali-calendar/bs-data";
-import { calculatePanchanga } from "../nepali-calendar/panchanga";
+import { scrapePatroScrapeMonth } from "./patroscrape-scraper";
+import { scrapeNepCalendarScrapeMonth } from "./nepcalendarscrape-scraper";
+import { bsToAd } from "../nepcalendarscrape/converter";
+import { WEEKDAYS, toDevanagari } from "../nepcalendarscrape/bs-data";
+import { calculatePanchanga } from "../nepcalendarscrape/panchanga";
 import { DEFAULT_CALENDAR_SOURCE, type CalendarSource } from "../settings";
 
 export interface ReconcileOptions {
@@ -40,9 +40,9 @@ export async function syncMonthCalendar(options: ReconcileOptions): Promise<Reco
     let eventsSynced = 0;
 
     const scrapedData =
-      source === "NEPALICALENDAR"
-        ? await scrapeNepaliCalendarMonth(yearBs, monthBs)
-        : await scrapeHamroPatroMonth(yearBs, monthBs);
+      source === "NEPCALENDARSCRAPE"
+        ? await scrapeNepCalendarScrapeMonth(yearBs, monthBs)
+        : await scrapePatroScrapeMonth(yearBs, monthBs);
 
     // Load any existing admin date overrides for this month
     const overrides = await prisma.dateOverride.findMany({

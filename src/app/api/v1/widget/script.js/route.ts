@@ -6,7 +6,7 @@ export async function GET(req: NextRequest) {
 
   const jsContent = `
 (function() {
-  const container = document.getElementById("nepali-calendar-widget");
+  const container = document.getElementById("nep-calendar-scrape-widget");
   if (!container) return;
 
   const apiKey = "${apiKey}";
