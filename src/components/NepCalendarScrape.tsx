@@ -1,5 +1,6 @@
 'use client';
 import MitiLoader from "@/components/MitiLoader";
+import { useLanguage } from "@/components/LanguageProvider";
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Calendar, Star, AlertCircle, X, Search } from 'lucide-react';
@@ -66,7 +67,7 @@ export default function NepCalendarScrape() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedDayBs, setSelectedDayBs] = useState<number | null>(null);
-  const [lang, setLang] = useState<'np' | 'en'>('np');
+  const { lang } = useLanguage();
 
   useEffect(() => {
     fetch(`/api/v1/calendar/today?api_key=${API_KEY}`)
@@ -207,19 +208,19 @@ export default function NepCalendarScrape() {
               <div className="flex flex-col text-center sm:text-left">
                 {lang === 'np' ? (
                   <>
-                    <h2 className="text-2xl md:text-[28px] font-extrabold text-slate-900 font-np tracking-tight">
+                    <h2 className="text-xl md:text-2xl font-semibold text-slate-900 font-np tracking-normal">
                       {data ? `${data.year_bs_np} ${data.month_name_np}` : '...'}
                     </h2>
-                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                    <p className="text-[11px] font-medium text-slate-400 uppercase tracking-widest mt-0.5">
                       {data ? `${data.year_bs} ${data.month_name_en}` : '...'}
                     </p>
                   </>
                 ) : (
                   <>
-                    <h2 className="text-2xl md:text-[28px] font-extrabold text-slate-900 tracking-tight">
+                    <h2 className="text-xl md:text-2xl font-semibold text-slate-900 tracking-normal">
                       {data ? `${data.year_bs} ${data.month_name_en}` : '...'}
                     </h2>
-                    <p className="text-[11px] font-bold text-slate-400 font-np tracking-widest mt-0.5">
+                    <p className="text-[11px] font-medium text-slate-400 font-np tracking-widest mt-0.5">
                       {data ? `${data.year_bs_np} ${data.month_name_np}` : '...'}
                     </p>
                   </>
@@ -241,7 +242,7 @@ export default function NepCalendarScrape() {
                 onClick={() => {
                   handleToday();
                 }}
-                className={`px-4 py-1.5 md:py-2 text-[13px] font-bold rounded-md transition-colors hover:bg-white hover:text-primary hover:shadow-sm ${lang === 'np' ? 'font-np' : ''} text-slate-600 flex-1 sm:flex-none text-center`}
+                className={`px-4 py-1.5 md:py-2 text-[13px] font-medium rounded-md transition-colors hover:bg-white hover:text-primary hover:shadow-sm ${lang === 'np' ? 'font-np' : ''} text-slate-600 flex-1 sm:flex-none text-center`}
               >
                 {lang === 'np' ? 'आज' : 'Today'}
               </button>
@@ -280,12 +281,12 @@ export default function NepCalendarScrape() {
                   <div key={idx} className={`text-center py-2.5 md:py-3 border-r last:border-r-0 border-slate-200 ${idx === 6 ? 'text-accent' : 'text-slate-600'}`}>
                     {lang === 'np' ? (
                       <>
-                        <div className="font-bold font-np text-sm md:text-base">{day.np}</div>
+                        <div className="font-medium font-np text-sm md:text-base">{day.np}</div>
                         <div className="text-[10px] md:text-xs uppercase opacity-80">{day.en}</div>
                       </>
                     ) : (
                       <>
-                        <div className="font-bold text-sm md:text-base">{day.en}</div>
+                        <div className="font-medium text-sm md:text-base">{day.en}</div>
                         <div className="text-[10px] md:text-xs uppercase opacity-80 font-np">{day.np}</div>
                       </>
                     )}
@@ -328,7 +329,7 @@ export default function NepCalendarScrape() {
                       </div>
                       
                       {/* Center: BS Date */}
-                      <div className={`text-2xl md:text-4xl font-bold text-center ${lang === 'np' ? 'font-np' : ''} my-auto py-1 ${isRed ? 'text-accent' : 'text-slate-800'}`}>
+                      <div className={`text-xl md:text-2xl font-medium text-center ${lang === 'np' ? 'font-np' : ''} my-auto py-1 ${isRed ? 'text-accent' : 'text-slate-800'}`}>
                         {lang === 'np' ? day.day_bs_np : day.day_ad}
                       </div>
 
@@ -378,7 +379,7 @@ export default function NepCalendarScrape() {
             <div className="p-4 md:p-5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-slate-600" />
-                <h3 className={`text-lg font-bold text-slate-800 ${lang === 'np' ? 'font-np' : ''}`}>
+                <h3 className={`text-lg font-medium text-slate-800 ${lang === 'np' ? 'font-np' : ''}`}>
                   {selectedDayBs !== null ? (
                     lang === 'np' ? (
                       <>{data.year_bs_np} {data.month_name_np} {selectedDayBs} गतेका पर्वहरू</>
@@ -410,17 +411,17 @@ export default function NepCalendarScrape() {
               {displayEvents.length > 0 ? (
                 displayEvents.map((event: any, idx) => (
                   <div key={`${event.id}-${idx}`} className="p-4 md:p-5 hover:bg-slate-50 transition-colors flex flex-col md:flex-row md:items-center gap-3 md:gap-6">
-                    <div className={`w-28 shrink-0 font-bold text-[17px] ${lang === 'np' ? 'font-np' : ''} ${event.is_public_holiday ? 'text-accent' : 'text-slate-700'}`}>
+                    <div className={`w-28 shrink-0 font-medium text-sm md:text-[15px] ${lang === 'np' ? 'font-np' : ''} ${event.is_public_holiday ? 'text-accent' : 'text-slate-700'}`}>
                       {lang === 'np' ? event.date_label_np : event.date_label_en}
                     </div>
                     <div>
-                      <h4 className={`font-bold text-slate-900 text-[17px] ${lang === 'np' ? 'font-np' : ''}`}>
+                      <h4 className={`font-medium text-slate-900 text-sm md:text-[15px] ${lang === 'np' ? 'font-np' : ''}`}>
                         {lang === 'np' ? event.title_np : event.title_en}
                       </h4>
                       {lang === 'np' && <p className="text-sm text-slate-500 mt-0.5">{event.title_en}</p>}
                     </div>
                     {event.is_public_holiday && (
-                      <span className="md:ml-auto mt-2 md:mt-0 inline-flex items-center px-2.5 py-1 text-xs font-bold text-accent bg-secondary/10 border border-secondary/20 rounded-md">
+                      <span className="md:ml-auto mt-2 md:mt-0 inline-flex items-center px-2.5 py-1 text-xs font-medium text-accent bg-secondary/10 border border-secondary/20 rounded-md">
                         {lang === 'np' ? 'सार्वजनिक बिदा' : 'Public Holiday'}
                       </span>
                     )}
