@@ -228,8 +228,8 @@ export default function NepCalendarScrape() {
   const displayEvents = getEventsToDisplay();
 
   return (
-    <div className="w-full font-sans">
-      <div className="w-full flex flex-col xl:flex-row gap-6 xl:gap-8 items-start">
+    <div className="w-full min-w-0 font-sans">
+      <div className="w-full min-w-0 flex flex-col xl:flex-row gap-6 xl:gap-8 items-start">
         
         {/* Main Calendar Card */}
         <main className="flex-1 min-w-0 w-full bg-white rounded-3xl shadow-[0_12px_40px_-8px_rgba(10,30,80,0.08),0_4px_12px_-4px_rgba(10,30,80,0.03)] border border-slate-100/80 overflow-hidden">
@@ -240,7 +240,7 @@ export default function NepCalendarScrape() {
             <div className="flex items-center gap-4 w-full sm:w-auto justify-center sm:justify-start">
               <div className="flex flex-col text-center sm:text-left w-full">
                 {lang === 'np' ? (
-                    <h2 className="flex items-baseline justify-center sm:justify-start gap-2 md:gap-3">
+                    <h2 className="flex flex-wrap items-baseline justify-center sm:justify-start gap-x-2 gap-y-0.5 md:gap-x-3 min-w-0">
                       <span className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 font-np">
                         {data ? `${data.month_name_np} ${data.year_bs_np}` : '...'}
                       </span>
@@ -251,7 +251,7 @@ export default function NepCalendarScrape() {
                       )}
                     </h2>
                 ) : (
-                    <h2 className="flex items-baseline justify-center sm:justify-start gap-2 md:gap-3">
+                    <h2 className="flex flex-wrap items-baseline justify-center sm:justify-start gap-x-2 gap-y-0.5 md:gap-x-3 min-w-0">
                       <span className="text-xl md:text-2xl font-bold tracking-tight text-slate-900">
                         {data ? `${data.month_name_en} ${data.year_bs}` : '...'}
                       </span>
@@ -320,10 +320,10 @@ export default function NepCalendarScrape() {
               </div>
 
               {/* Days Grid */}
-              <div className="grid grid-cols-7 gap-1 border-b border-slate-200/60">
+              <div className="grid grid-cols-7 gap-[3px] md:gap-1 border-b border-slate-200/60">
                 {/* Empty cells */}
                 {Array.from({ length: data.start_day_of_week }).map((_, idx) => (
-                  <div key={`empty-${idx}`} className="bg-slate-50/70 rounded-lg min-h-[100px] md:min-h-[120px]"></div>
+                  <div key={`empty-${idx}`} className="bg-slate-50/70 rounded-lg min-h-[78px] sm:min-h-[104px] md:min-h-[120px]"></div>
                 ))}
                 
                 {/* Day cells */}
@@ -340,21 +340,21 @@ export default function NepCalendarScrape() {
                   return (
                     <div 
                       key={`day-${day.day_bs}`} 
-                      className={`relative flex flex-col p-1.5 md:p-2 min-h-[100px] md:min-h-[120px] rounded-lg transition-all duration-150 cursor-pointer ${day.is_today ? 'hover:bg-primary-dark' : 'hover:bg-slate-50'} ${cellBg} ${isSelected ? 'ring-2 ring-secondary ring-inset shadow-inner z-10' : ''}`}
+                      className={`relative flex flex-col p-1 md:p-2 min-h-[78px] sm:min-h-[104px] md:min-h-[120px] rounded-lg transition-all duration-150 cursor-pointer overflow-hidden ${day.is_today ? 'hover:bg-primary-dark' : 'hover:bg-slate-50'} ${cellBg} ${isSelected ? 'ring-2 ring-secondary ring-inset shadow-inner z-10' : ''}`}
                       onClick={() => handleDayClick(day.day_bs)}
                     >
                       {/* Top Row: Tithi & AD Date */}
                       <div className="flex justify-between items-start w-full">
-                        <span className={`text-[10px] md:text-xs font-np truncate max-w-[60%] ${day.is_today ? 'text-secondary-light/90' : 'text-slate-500'}`}>
+                        <span className={`text-[9px] md:text-xs font-np truncate max-w-[60%] ${day.is_today ? 'text-secondary-light/90' : 'text-slate-500'}`}>
                           {(lang === 'np' ? (day.tithi_name_np || day.tithi_short) : (day.tithi_name_en || day.tithi_short))}
                         </span>
-                        <span className={`text-[10px] md:text-xs font-bold ${day.is_today ? 'text-secondary-light/70' : 'text-slate-400'}`}>
+                        <span className={`text-[9px] md:text-xs font-bold ${day.is_today ? 'text-secondary-light/70' : 'text-slate-400'}`}>
                           {day.day_ad}
                         </span>
                       </div>
                       
                       {/* Center: BS Date */}
-                      <div className={`text-xl md:text-2xl font-medium text-center ${lang === 'np' ? 'font-np' : ''} my-auto py-1 ${day.is_today ? 'text-secondary font-bold' : (isRed ? 'text-accent' : 'text-slate-800')}`}>
+                      <div className={`text-base sm:text-xl md:text-2xl font-medium text-center ${lang === 'np' ? 'font-np' : ''} my-auto py-0.5 md:py-1 ${day.is_today ? 'text-secondary font-bold' : (isRed ? 'text-accent' : 'text-slate-800')}`}>
                         {lang === 'np' ? day.day_bs_np : day.day_ad}
                       </div>
 
@@ -363,7 +363,7 @@ export default function NepCalendarScrape() {
                         {day.events?.slice(0, 2).map((ev: any, i: number) => (
                           <div
                             key={i}
-                            className={`w-full text-[9px] md:text-[10px] leading-tight truncate px-1 py-0.5 rounded ${lang === 'np' ? 'font-np' : ''} ${
+                            className={`w-full text-[8px] md:text-[10px] leading-tight truncate px-1 py-0.5 rounded ${lang === 'np' ? 'font-np' : ''} ${
                               ev.is_public_holiday
                                 ? (day.is_today ? "text-secondary font-bold bg-secondary/20" : "text-accent font-semibold bg-accent/10")
                                 : (day.is_today ? "text-secondary-light/95" : "text-slate-600")
@@ -374,7 +374,7 @@ export default function NepCalendarScrape() {
                           </div>
                         ))}
                         {day.events && day.events.length > 2 && (
-                          <div className={`text-[9px] text-slate-400 font-medium ${lang === 'np' ? 'font-np' : ''}`}>
+                          <div className={`text-[8px] md:text-[9px] text-slate-400 font-medium ${lang === 'np' ? 'font-np' : ''}`}>
                             {lang === 'np' ? `+${day.events.length - 2} थप` : `+${day.events.length - 2} more`}
                           </div>
                         )}
@@ -385,7 +385,7 @@ export default function NepCalendarScrape() {
 
                 {/* Fill remaining cells if needed */}
                 {Array.from({ length: (7 - ((data.start_day_of_week + data.days_in_month) % 7)) % 7 }).map((_, idx) => (
-                  <div key={`empty-end-${idx}`} className="bg-slate-50/70 rounded-lg min-h-[100px] md:min-h-[120px]"></div>
+                  <div key={`empty-end-${idx}`} className="bg-slate-50/70 rounded-lg min-h-[78px] sm:min-h-[104px] md:min-h-[120px]"></div>
                 ))}
               </div>
             </div>
@@ -394,7 +394,7 @@ export default function NepCalendarScrape() {
 
         {/* Events Section */}
         {/* Events Section */}
-        <section className="w-full xl:w-[420px] shrink-0 flex flex-col bg-white rounded-3xl shadow-[0_12px_40px_-8px_rgba(10,30,80,0.08)] overflow-hidden min-h-[500px]">
+        <section className="w-full min-w-0 xl:w-[420px] shrink-0 flex flex-col bg-white rounded-3xl shadow-[0_12px_40px_-8px_rgba(10,30,80,0.08)] overflow-hidden min-h-[500px]">
           {loading || !data ? (
             <div className="flex-1 flex flex-col items-center justify-center bg-slate-50/50">
               <MitiLoader className="w-8 h-8 opacity-50" />
@@ -410,7 +410,7 @@ export default function NepCalendarScrape() {
                   <h3 className={`text-[13px] md:text-sm font-bold text-slate-900 truncate ${lang === 'np' ? 'font-np' : ''}`}>
                     {selectedDayBs !== null ? (
                       lang === 'np' ? (
-                        <>{data.year_bs_np} {data.month_name_np} {selectedDayBs} गते</>
+                        <>{data.year_bs_np} {data.month_name_np} {toNp(selectedDayBs)} गते</>
                       ) : (
                         <>Events on {data.month_name_en} {selectedDayBs}, {data.year_bs}</>
                       )
@@ -451,7 +451,7 @@ export default function NepCalendarScrape() {
             <div className="divide-y divide-slate-100 xl:max-h-[800px] overflow-y-auto">
               {displayEvents.length > 0 ? (
                 displayEvents.map((event: any, idx) => (
-                  <div key={`${event.id}-${idx}`} className={`group px-4 md:px-5 py-4 hover:bg-slate-50/90 transition-colors flex items-center gap-3 md:gap-4`}>
+                  <div key={`${event.id}-${idx}`} className={`group px-3.5 md:px-5 py-3 md:py-4 hover:bg-slate-50/90 transition-colors flex items-center gap-3 md:gap-4`}>
                     <div className={`w-[52px] md:w-14 shrink-0 flex flex-col items-center rounded-xl py-2 ${event.is_public_holiday ? 'bg-accent text-white' : 'bg-primary text-secondary-light'}`}>
                       <span className={`text-base md:text-lg font-bold leading-none ${lang === 'np' ? 'font-np' : ''}`}>
                         {lang === 'np' ? event.day_bs_np : String(event.day_bs)}
@@ -469,9 +469,6 @@ export default function NepCalendarScrape() {
                           <span className={`${lang === 'np' ? 'font-np' : ''} text-slate-400 truncate`}>
                             {lang === 'np' ? event.tithi_np : event.tithi_en}
                           </span>
-                        ) : null}
-                        {lang === 'np' && event.title_en ? (
-                          <span className="truncate text-slate-400">{event.title_en}</span>
                         ) : null}
                         {event.is_public_holiday && (
                           <span className={`font-bold text-accent shrink-0 ${lang === 'np' ? 'font-np' : ''}`}>

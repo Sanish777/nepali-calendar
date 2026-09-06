@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:keepalive": "node scripts/keepalive.mjs",
     "build": "next build",
     "start": "next start",
     "postinstall": "prisma generate",
