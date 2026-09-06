@@ -1,4 +1,4 @@
-name: CI/CD
+name: CI
 
 on:
   push:
@@ -12,14 +12,11 @@ concurrency:
 
 env:
   NODE_VERSION: "24"
-  VERCEL_ORG_ID: team_vCjwNRsDjym521ROMzHabgQK
-  VERCEL_PROJECT_ID: prj_NS2XLxuM4ecTxuVFxH0RMlNhak7A
 
 jobs:
   lint:
     name: Lint (non-blocking)
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -30,7 +27,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm lint
+      - run: pnpm lint || echo "::warning::Lint reported issues; continuing."
 
   build:
     name: Build
@@ -47,40 +44,3 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: npx prisma generate
       - run: pnpm build
-
-  deploy:
-    name: Deploy to Vercel (Production)
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    environment:
-      name: production
-      url: ${{ steps.deploy.outputs.url }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          run_install: false
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-
-      - name: Pull Vercel environment information
-        id: pull
-        run: npx vercel@latest pull --yes --environment=production --token=$VERCEL_TOKEN
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-
-      - name: Build Project Artifacts
-        id: build
-        run: npx vercel@latest build --prod --token=$VERCEL_TOKEN
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-
-      - name: Deploy Project Artifacts to Vercel
-        id: deploy
-        run: npx vercel@latest deploy --prebuilt --prod --token=$VERCEL_TOKEN
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
