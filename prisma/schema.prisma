@@ -75,7 +75,6 @@ model ApiKey {
   updatedAt          DateTime       @updatedAt
   usageLogs          ApiUsageLog[]
 
-  @@index([key])
   @@index([userId])
 }
 

@@ -88,164 +88,24 @@ function tithiEnToNp(input: string): string {
   return TITHI_NP_MAP[key] || "";
 }
 
-function makeElement() {
-  const el: any = {
-    _children: [],
-    id: "",
-    name: "",
-    value: "",
-    type: "text",
-    method: "GET",
-    action: "",
-    style: {},
-    appendChild(c: any) {
-      el._children.push(c);
-      return c;
-    },
-    submit() {
-      const qs = new URLSearchParams();
-      for (const c of el._children) {
-        if (c && c.name) qs.append(c.name, String(c.value));
-      }
-      el._submitted = { action: el.action, query: qs.toString() };
-    },
-  };
-  return el;
-}
-
-let cookieCache: { cookie: string; expiresAt: number } = { cookie: "", expiresAt: 0 };
-const COOKIE_TTL_MS = 20 * 60 * 1000;
-
-function invalidateCookieCache() {
-  cookieCache = { cookie: "", expiresAt: 0 };
-}
-
-async function mintCookie(): Promise<string> {
-  if (cookieCache.cookie && Date.now() < cookieCache.expiresAt) {
-    return cookieCache.cookie;
-  }
-
-  const first = await fetch(BASE + "/index.php", {
-    headers: { "User-Agent": UA },
-    redirect: "follow",
-  });
-  const html = await first.text();
-
-  const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
-  const challenge = scripts.find(
-    (s) => (s.includes("a0a=function") || s.includes("0x144")) && s.includes("submit")
-  );
-
-  if (!challenge) {
-    throw new Error("NepaliCalendar challenge could not be parsed (anti-bot or rate-limited).");
-  }
-
-  const container = makeElement();
-  const doc: any = {
-    createElement: makeElement,
-    getElementById: () => container,
-    addEventListener(evt: string, fn: () => void) {
-      if (evt === "DOMContentLoaded") fn();
-    },
-  };
-  const win: any = {
-    location: { reload() {} },
-    outerHeight: 800,
-    outerWidth: 1200,
-    navigator: {
-      userAgent: UA,
-      appVersion:
-        "5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-      language: "en-US",
-      languages: ["en-US"],
-      plugins: [],
-      mimeTypes: [],
-    },
-    document: doc,
-    addEventListener(evt: string, fn: () => void) {
-      if (evt === "DOMContentLoaded") fn();
-    },
-    attachEvent(evt: string, fn: () => void) {
-      if (evt.includes("oad")) fn();
-    },
-    XMLHttpRequest: class {
-      open() {}
-      send() {}
-      setRequestHeader() {}
-    },
-  };
-  win.window = win;
-  win.self = win;
-  win.top = win;
-  win.parent = win;
-  win.frames = win;
-
-  const names = [
-    "window",
-    "document",
-    "navigator",
-    "location",
-    "self",
-    "top",
-    "parent",
-    "frames",
-    "PluginArray",
-    "MimeTypeArray",
-    "XMLHttpRequest",
-  ];
-  const vals = [win, doc, win.navigator, win.location, win, win, win, win, undefined, undefined, win.XMLHttpRequest];
-
-  try {
-    new Function(...names, challenge)(...vals);
-  } catch {
-    // challenge runs async; ignore registration errors
-  }
-
-  await new Promise((r) => setTimeout(r, 1200));
-
-  const form = (container._children || []).find((c: any) => c && c._submitted);
-  if (!form) {
-    throw new Error("NepaliCalendar challenge form was not captured.");
-  }
-
-  const resolve = await fetch(BASE + form._submitted.action + "?" + form._submitted.query, {
-    redirect: "manual",
-    headers: { "User-Agent": UA },
-  });
-  const setCookies = resolve.headers.getSetCookie ? resolve.headers.getSetCookie() : [];
-  const cookie = setCookies.map((c: string) => c.split(";")[0]).join("; ");
-
-  cookieCache = { cookie, expiresAt: Date.now() + COOKIE_TTL_MS };
-  return cookie;
-}
-
 async function fetchPage(path: string): Promise<string> {
-  const maxAttempts = 4;
+  const maxAttempts = 2;
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    let cookie: string;
-    try {
-      cookie = await mintCookie();
-    } catch (err: any) {
-      if (attempt >= maxAttempts - 1) throw err;
-      invalidateCookieCache();
-      await new Promise((r) => setTimeout(r, 15000 * (attempt + 1)));
-      continue;
-    }
-
     const resp = await fetch(BASE + path, {
-      headers: { "User-Agent": UA, Cookie: cookie },
+      headers: { "User-Agent": UA },
       redirect: "follow",
+      cache: "no-store",
     });
     const html = await resp.text();
 
+    // A blocked page is tiny or shows a JS check ("One moment…")
     const blocked = /<title>One moment/.test(html) || html.length < 5000;
     if (!blocked) return html;
 
     if (attempt >= maxAttempts - 1) {
       throw new Error(`NepaliCalendar could not fetch ${path} after ${maxAttempts} attempts (anti-bot/rate-limited).`);
     }
-    invalidateCookieCache();
-    await new Promise((r) => setTimeout(r, 15000 * (attempt + 1)));
+    await new Promise((r) => setTimeout(r, 1500));
   }
   throw new Error(`NepaliCalendar could not fetch ${path} (anti-bot/rate-limited).`);
 }

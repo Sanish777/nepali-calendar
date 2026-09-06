@@ -322,8 +322,9 @@ export async function logApiUsage(
         method,
         statusCode,
         responseTimeMs,
-        ipAddress,
-        userAgent,
+        // Bound stored sizes — full user agents can reach several KB
+        ipAddress: ipAddress ? ipAddress.slice(0, 45) : undefined,
+        userAgent: userAgent ? userAgent.slice(0, 255) : undefined,
       },
     });
   } catch (err) {

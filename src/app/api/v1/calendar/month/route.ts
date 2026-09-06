@@ -53,10 +53,17 @@ export async function GET(req: NextRequest) {
     },
   });
 
-  // If fewer than full days in month exist, trigger quick sync/reconcile
-  if (dbDates.length < daysInMonth) {
+  // If a partial month exists, top it up — but never cold-scrape a brand-new
+  // source here (it blocks for ~90s on anti-bot retries), and bound the wait so
+  // the API can never hang. Missing months are filled by the cron sync instead.
+  if (dbDates.length > 0 && dbDates.length < daysInMonth) {
     try {
-      await syncMonthCalendar({ yearBs, monthBs, source });
+      await Promise.race([
+        syncMonthCalendar({ yearBs, monthBs, source }),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Sync timed out; skipping in-request reconcile.")), 8000)
+        ),
+      ]);
       dbDates = await prisma.calendarDate.findMany({
         where: {
           source,
@@ -73,7 +80,7 @@ export async function GET(req: NextRequest) {
         },
       });
     } catch {
-      // Continue with algorithm-generated dates if scraper network times out
+      // Continue with existing/algorithm-generated dates if scrape times out
     }
   }
 

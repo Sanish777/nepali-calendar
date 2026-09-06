@@ -519,24 +519,44 @@ export default function AdminPage() {
     setScraperProgress("");
     const fromY = Math.min(scraperFromYear, scraperToYear);
     const toY = Math.max(scraperFromYear, scraperToYear);
+    const jobs: { yr: number; mo: number }[] = [];
+    for (let yr = fromY; yr <= toY; yr++) {
+      for (let mo = 1; mo <= 12; mo++) {
+        jobs.push({ yr, mo });
+      }
+    }
+
     let totalSynced = 0;
     let failed = 0;
-    try {
-      for (let yr = fromY; yr <= toY; yr++) {
-        for (let mo = 1; mo <= 12; mo++) {
-          setScraperProgress(`Scraping ${yr}/${mo}...`);
-          try {
-            const res = await fetch("/api/admin/scraper/run", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ yearBs: yr, monthBs: mo, source: scraperSource }),
-            });
-            const data = await res.json();
-            if (data.success) totalSynced++;
-            else failed++;
-          } catch { failed++; }
-        }
+    let done = 0;
+    const CONCURRENCY = 6;
+    const runJob = async (job: { yr: number; mo: number }) => {
+      try {
+        const res = await fetch("/api/admin/scraper/run", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ yearBs: job.yr, monthBs: job.mo, source: scraperSource }),
+        });
+        const data = await res.json();
+        if (data.success) totalSynced++;
+        else failed++;
+      } catch { failed++; }
+      finally {
+        done++;
+        setScraperProgress(`Scraping ${job.yr}/${job.mo}... (${done}/${jobs.length})`);
       }
+    };
+
+    try {
+      let cursor = 0;
+      const worker = async () => {
+        while (cursor < jobs.length) {
+          const job = jobs[cursor++];
+          await runJob(job);
+        }
+      };
+      await Promise.all(Array.from({ length: Math.min(CONCURRENCY, jobs.length) }, worker));
+
       setScraperMessage(`Done! Synced ${totalSynced} months across BS ${fromY}–${toY}. ${failed > 0 ? `${failed} failed.` : ""}`);
       setScraperProgress("");
       fetchScraperLogs();
