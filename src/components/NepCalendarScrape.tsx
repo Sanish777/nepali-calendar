@@ -331,27 +331,27 @@ export default function NepCalendarScrape() {
                   
                   let cellBg = "bg-white";
                   if (isSelected) cellBg = "bg-secondary/10";
-                  else if (day.is_today) cellBg = "bg-blue-50/40";
+                  else if (day.is_today) cellBg = "bg-primary";
                   else if (isRed) cellBg = "bg-secondary/10/20";
 
                   return (
                     <div 
                       key={`day-${day.day_bs}`} 
-                      className={`relative flex flex-col p-1.5 md:p-2 min-h-[100px] md:min-h-[120px] transition-colors cursor-pointer hover:bg-slate-50 ${cellBg} ${isSelected ? 'ring-2 ring-primary ring-inset z-10' : ''}`}
+                      className={`relative flex flex-col p-1.5 md:p-2 min-h-[100px] md:min-h-[120px] transition-colors cursor-pointer ${day.is_today ? 'hover:bg-primary-dark' : 'hover:bg-slate-50'} ${cellBg} ${isSelected ? 'ring-2 ring-primary ring-inset z-10' : ''}`}
                       onClick={() => handleDayClick(day.day_bs)}
                     >
                       {/* Top Row: Tithi & AD Date */}
                       <div className="flex justify-between items-start w-full">
-                        <span className="text-[10px] md:text-xs text-slate-500 font-np truncate max-w-[60%]">
+                        <span className={`text-[10px] md:text-xs font-np truncate max-w-[60%] ${day.is_today ? 'text-secondary-light/90' : 'text-slate-500'}`}>
                           {(lang === 'np' ? (day.tithi_name_np || day.tithi_short) : (day.tithi_name_en || day.tithi_short))}
                         </span>
-                        <span className="text-[10px] md:text-xs text-slate-400 font-medium">
+                        <span className={`text-[10px] md:text-xs font-medium ${day.is_today ? 'text-secondary-light/70' : 'text-slate-400'}`}>
                           {day.day_ad}
                         </span>
                       </div>
                       
                       {/* Center: BS Date */}
-                      <div className={`text-xl md:text-2xl font-medium text-center ${lang === 'np' ? 'font-np' : ''} my-auto py-1 ${isRed ? 'text-accent' : 'text-slate-800'}`}>
+                      <div className={`text-xl md:text-2xl font-medium text-center ${lang === 'np' ? 'font-np' : ''} my-auto py-1 ${day.is_today ? 'text-secondary font-bold' : (isRed ? 'text-accent' : 'text-slate-800')}`}>
                         {lang === 'np' ? day.day_bs_np : day.day_ad}
                       </div>
 
@@ -362,8 +362,8 @@ export default function NepCalendarScrape() {
                             key={i}
                             className={`w-full text-[9px] md:text-[10px] leading-tight truncate px-1 py-0.5 rounded-[2px] ${lang === 'np' ? 'font-np' : ''} ${
                               ev.is_public_holiday
-                                ? "text-accent font-medium"
-                                : "text-slate-600"
+                                ? (day.is_today ? "text-secondary font-bold bg-secondary/10" : "text-accent font-medium")
+                                : (day.is_today ? "text-secondary-light/90" : "text-slate-600")
                             }`}
                             title={lang === 'np' ? ev.title_np : ev.title_en}
                           >
