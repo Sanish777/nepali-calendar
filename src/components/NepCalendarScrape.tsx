@@ -177,30 +177,41 @@ export default function NepCalendarScrape() {
     const dayNumberNp = (day: CalendarDay) => day.day_bs_np;
     const dayNumberEn = (day: CalendarDay) => String(day.day_bs);
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const computeEventMeta = (e: any, day: CalendarDay) => {
+      const eventDate = new Date(day.year_ad, day.month_ad - 1, day.day_ad);
+      eventDate.setHours(0, 0, 0, 0);
+      const diffTime = eventDate.getTime() - today.getTime();
+      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+      
+      return {
+        ...e,
+        date_label_np: `${data.month_name_np} ${dayNumberNp(day)}`,
+        date_label_en: `${data.month_name_en} ${dayNumberEn(day)}`,
+        tithi_np: day.tithi_name_np || day.tithi_short,
+        tithi_en: day.tithi_name_en || day.tithi_short,
+        diff_days: diffDays
+      };
+    };
+
     if (selectedDayBs !== null) {
       const selectedDay = data.days.find(d => d.day_bs === selectedDayBs);
       if (selectedDay && selectedDay.events) {
-        return selectedDay.events.map(e => ({
-          ...e,
-          date_label_np: `${data.month_name_np} ${dayNumberNp(selectedDay)}`,
-          date_label_en: `${data.month_name_en} ${dayNumberEn(selectedDay)}`
-        }));
+        return selectedDay.events.map(e => computeEventMeta(e, selectedDay));
       }
       return [];
     }
 
-    const allEvents: CalendarEvent[] = [];
+    const allEvents: any[] = [];
     const seenEventIds = new Set<string>();
     
     data.days.forEach(day => {
       day.events?.forEach(event => {
         if (!seenEventIds.has(event.id)) {
           seenEventIds.add(event.id);
-          allEvents.push({
-            ...event,
-            date_label_np: `${data.month_name_np} ${dayNumberNp(day)}`,
-            date_label_en: `${data.month_name_en} ${dayNumberEn(day)}`
-          });
+          allEvents.push(computeEventMeta(event, day));
         }
       });
     });
@@ -421,21 +432,43 @@ export default function NepCalendarScrape() {
             <div className="divide-y divide-slate-100 xl:max-h-[800px] overflow-y-auto">
               {displayEvents.length > 0 ? (
                 displayEvents.map((event: any, idx) => (
-                  <div key={`${event.id}-${idx}`} className="p-4 md:p-5 hover:bg-slate-50 transition-colors flex flex-col md:flex-row md:items-center gap-3 md:gap-6">
-                    <div className={`w-28 shrink-0 font-medium text-sm md:text-[15px] ${lang === 'np' ? 'font-np' : ''} ${event.is_public_holiday ? 'text-accent' : 'text-slate-700'}`}>
-                      {lang === 'np' ? event.date_label_np : event.date_label_en}
+                  <div key={`${event.id}-${idx}`} className="p-4 md:p-5 hover:bg-slate-50 transition-colors flex flex-col gap-2 relative">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <h4 className={`font-semibold text-slate-900 text-sm md:text-base ${lang === 'np' ? 'font-np' : ''}`}>
+                          {lang === 'np' ? event.title_np : event.title_en}
+                        </h4>
+                        <div className="flex flex-wrap items-center gap-1.5 md:gap-2 mt-1.5 text-xs md:text-[13px] text-slate-500">
+                          <span className={`${lang === 'np' ? 'font-np' : ''} font-medium ${event.is_public_holiday ? 'text-accent' : 'text-primary'}`}>
+                            {lang === 'np' ? event.date_label_np : event.date_label_en}
+                          </span>
+                          <span className="opacity-40">•</span>
+                          <span className={`${lang === 'np' ? 'font-np' : ''}`}>
+                            {lang === 'np' ? event.tithi_np : event.tithi_en}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex flex-col items-end gap-1.5 shrink-0 mt-0.5">
+                        {event.diff_days !== undefined && (
+                          <span className={`text-[10px] md:text-xs font-semibold px-2.5 py-0.5 rounded-full ${
+                            event.diff_days === 0 ? 'bg-green-100 text-green-700' :
+                            event.diff_days > 0 && event.diff_days <= 3 ? 'bg-orange-100 text-orange-700' :
+                            event.diff_days > 0 ? 'bg-slate-100 text-slate-600' :
+                            'bg-slate-50 text-slate-400 border border-slate-200'
+                          } ${lang === 'np' ? 'font-np tracking-wide' : ''}`}>
+                            {event.diff_days === 0 ? (lang === 'np' ? 'आज' : 'Today') :
+                             event.diff_days > 0 ? (lang === 'np' ? `${event.diff_days} दिन बाँकी` : `In ${event.diff_days} days`) :
+                             (lang === 'np' ? `${Math.abs(event.diff_days)} दिन अघि` : `${Math.abs(event.diff_days)} days ago`)}
+                          </span>
+                        )}
+                        {event.is_public_holiday && (
+                          <span className={`inline-flex items-center px-2 py-0.5 text-[9px] md:text-[10px] font-bold text-accent bg-secondary/10 rounded border border-secondary/20 ${lang === 'np' ? 'font-np' : ''}`}>
+                            {lang === 'np' ? 'सार्वजनिक बिदा' : 'Holiday'}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <h4 className={`font-medium text-slate-900 text-sm md:text-[15px] ${lang === 'np' ? 'font-np' : ''}`}>
-                        {lang === 'np' ? event.title_np : event.title_en}
-                      </h4>
-                      {lang === 'np' && <p className="text-sm text-slate-500 mt-0.5">{event.title_en}</p>}
-                    </div>
-                    {event.is_public_holiday && (
-                      <span className="md:ml-auto mt-2 md:mt-0 inline-flex items-center px-2.5 py-1 text-xs font-medium text-accent bg-secondary/10 border border-secondary/20 rounded-md">
-                        {lang === 'np' ? 'सार्वजनिक बिदा' : 'Public Holiday'}
-                      </span>
-                    )}
                   </div>
                 ))
               ) : (
