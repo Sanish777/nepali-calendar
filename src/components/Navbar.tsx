@@ -16,15 +16,24 @@ export default function Navbar() {
   const [showDropdown, setShowDropdown] = useState(false);
 
   useEffect(() => {
+    let active = true;
     fetch("/api/auth/me")
       .then((res) => res.json())
       .then((data) => {
+        if (!active) return;
         if (data.success && data.user) {
           setUser(data.user);
+        } else {
+          setUser(null);
         }
       })
-      .catch(() => {});
-  }, []);
+      .catch(() => {
+        if (active) setUser(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, [pathname]);
 
   useEffect(() => {
     fetch("/api/v1/calendar/today?api_key=np_live_demo1234567890abcdef12345678")
@@ -39,6 +48,7 @@ export default function Navbar() {
   }, []);
 
   const handleLogout = async () => {
+    setUser(null);
     await fetch("/api/auth/logout", { method: "POST" });
     window.location.href = "/";
   };

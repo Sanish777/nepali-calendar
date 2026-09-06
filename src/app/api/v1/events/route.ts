@@ -3,6 +3,12 @@ import { authenticateApiKey, logApiUsage, withRateLimitHeaders } from "@/lib/aut
 import { prisma } from "@/lib/prisma";
 import { getActiveCalendarSource } from "@/lib/settings";
 
+// Events are edited by admins/scrapers, not per request, so a short cache keeps
+// repeated hits off the DB while staying fresh enough for admin changes.
+const payloadCache = new Map<string, { payload: unknown; expiresAt: number }>();
+const PAYLOAD_TTL_MS = 30 * 1000;
+const MAX_CACHE_ENTRIES = 100;
+
 export async function GET(req: NextRequest) {
   const startTime = Date.now();
   const { auth, errorResponse } = await authenticateApiKey(req);
@@ -14,6 +20,27 @@ export async function GET(req: NextRequest) {
   const holidayOnly = url.searchParams.get("holiday_only") === "true";
   const search = url.searchParams.get("search")?.trim();
   const source = await getActiveCalendarSource();
+
+  const cacheKey = `${source}:${yearBs ?? "*"}:${monthBs ?? "*"}:${holidayOnly}:${search ?? ""}`;
+  const cached = payloadCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) {
+    const duration = Date.now() - startTime;
+    if (auth) {
+      logApiUsage(
+        auth.apiKey.id,
+        "/api/v1/events",
+        "GET",
+        200,
+        duration,
+        req.headers.get("x-forwarded-for") || undefined,
+        req.headers.get("user-agent") || undefined
+      );
+    }
+    return withRateLimitHeaders(
+      NextResponse.json({ success: true, count: (cached.payload as any[]).length, data: cached.payload }),
+      auth?.rateLimit
+    );
+  }
 
   const where: any = {
     OR: [
@@ -59,6 +86,27 @@ export async function GET(req: NextRequest) {
     take: 200,
   });
 
+  const data = events.map((e) => ({
+    id: e.id,
+    title_np: e.titleNp,
+    title_en: e.titleEn,
+    description: e.description,
+    event_type: e.eventType,
+    is_public_holiday: e.isPublicHoliday,
+    bs_year: e.bsYear,
+    bs_month: e.bsMonth,
+    bs_day: e.bsDay,
+    source: e.source,
+    image_url: e.imageUrl,
+    article_url: e.articleUrl,
+  }));
+
+  payloadCache.set(cacheKey, { payload: data, expiresAt: Date.now() + PAYLOAD_TTL_MS });
+  if (payloadCache.size > MAX_CACHE_ENTRIES) {
+    const oldestKey = payloadCache.keys().next().value as string;
+    payloadCache.delete(oldestKey);
+  }
+
   const duration = Date.now() - startTime;
   if (auth) {
     logApiUsage(
@@ -75,21 +123,8 @@ export async function GET(req: NextRequest) {
   return withRateLimitHeaders(
     NextResponse.json({
       success: true,
-      count: events.length,
-      data: events.map((e) => ({
-        id: e.id,
-        title_np: e.titleNp,
-        title_en: e.titleEn,
-        description: e.description,
-        event_type: e.eventType,
-        is_public_holiday: e.isPublicHoliday,
-        bs_year: e.bsYear,
-        bs_month: e.bsMonth,
-        bs_day: e.bsDay,
-        source: e.source,
-        image_url: e.imageUrl,
-        article_url: e.articleUrl,
-      })),
+      count: data.length,
+      data,
     }),
     auth?.rateLimit
   );

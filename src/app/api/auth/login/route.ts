@@ -40,6 +40,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (user.isActive === false) {
+      return NextResponse.json(
+        { success: false, message: "This account has been deactivated." },
+        { status: 403 }
+      );
+    }
+
     const token = signToken({
       userId: user.id,
       email: user.email,

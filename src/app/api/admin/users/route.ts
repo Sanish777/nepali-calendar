@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyToken, hashPassword } from "@/lib/auth/jwt";
+import { invalidateApiKeyCache } from "@/lib/auth/api-key";
 
 function requireAdmin(req: NextRequest) {
   let token = req.cookies.get("miti_token")?.value;
@@ -22,6 +23,7 @@ export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const search = url.searchParams.get("search")?.trim();
   const role = url.searchParams.get("role")?.trim();
+  const status = url.searchParams.get("status")?.trim().toUpperCase();
   const page = Math.max(parseInt(url.searchParams.get("page") || "1", 10) || 1, 1);
   const limit = Math.min(
     Math.max(parseInt(url.searchParams.get("limit") || "10", 10) || 10, 1),
@@ -37,6 +39,9 @@ export async function GET(req: NextRequest) {
   }
   if (role === "ADMIN" || role === "USER") {
     where.role = role;
+  }
+  if (status === "ACTIVE" || status === "DEACTIVATED") {
+    where.isActive = status === "ACTIVE";
   }
 
   const [total, users] = await Promise.all([
@@ -75,6 +80,7 @@ export async function GET(req: NextRequest) {
       name: u.name,
       email: u.email,
       role: u.role,
+      isActive: u.isActive,
       organizationName: u.organizationName,
       createdAt: u.createdAt,
       subscription: u.subscription
@@ -145,14 +151,41 @@ export async function PUT(req: NextRequest) {
   if (!admin) return NextResponse.json({ success: false, message: "Forbidden" }, { status: 403 });
 
   const body = await req.json();
-  const { userId, customRpm, customMonthlyLimit, role, apiKeyId, keyRpm, keyMonthlyLimit } = body;
+  const { userId, name, email, organizationName, role, isActive, password, customRpm, customMonthlyLimit, apiKeyId, keyRpm, keyMonthlyLimit } = body;
 
   if (!userId) return NextResponse.json({ success: false, message: "userId is required." }, { status: 400 });
 
-  if (role) {
+  const userData: any = {};
+  if (name !== undefined) {
+    if (!String(name).trim()) return NextResponse.json({ success: false, message: "Name cannot be empty." }, { status: 400 });
+    userData.name = String(name).trim();
+  }
+  if (email !== undefined) {
+    const cleanEmail = String(email).toLowerCase().trim();
+    if (!cleanEmail) return NextResponse.json({ success: false, message: "Email cannot be empty." }, { status: 400 });
+    const existing = await prisma.user.findUnique({ where: { email: cleanEmail } });
+    if (existing && existing.id !== userId) {
+      return NextResponse.json({ success: false, message: "Email already exists." }, { status: 400 });
+    }
+    userData.email = cleanEmail;
+  }
+  if (organizationName !== undefined) {
+    userData.organizationName = organizationName ? String(organizationName).trim() : null;
+  }
+  if (role === "ADMIN" || role === "USER") {
+    userData.role = role;
+  }
+  if (typeof isActive === "boolean") {
+    userData.isActive = isActive;
+  }
+  if (password && String(password).length > 0) {
+    userData.passwordHash = await hashPassword(String(password));
+  }
+
+  if (Object.keys(userData).length > 0) {
     await prisma.user.update({
       where: { id: userId },
-      data: { role },
+      data: userData,
     });
   }
 
@@ -191,8 +224,29 @@ export async function PUT(req: NextRequest) {
     });
   }
 
+  invalidateApiKeyCache();
+
   return NextResponse.json({
     success: true,
     message: "User updated successfully.",
   });
+}
+
+export async function DELETE(req: NextRequest) {
+  const admin = requireAdmin(req);
+  if (!admin) return NextResponse.json({ success: false, message: "Forbidden" }, { status: 403 });
+
+  const url = new URL(req.url);
+  const id = url.searchParams.get("id");
+
+  if (!id) return NextResponse.json({ success: false, message: "id required." }, { status: 400 });
+
+  const existing = await prisma.user.findUnique({ where: { id } });
+  if (!existing) return NextResponse.json({ success: false, message: "User not found." }, { status: 404 });
+
+  await prisma.user.delete({ where: { id } });
+
+  invalidateApiKeyCache();
+
+  return NextResponse.json({ success: true, message: "User deleted successfully." });
 }

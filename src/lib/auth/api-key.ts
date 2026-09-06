@@ -45,6 +45,36 @@ export interface ApiAuthContext {
 // Map of `apiKeyId` -> array of timestamps (ms)
 const rateTracker = new Map<string, number[]>();
 
+async function loadApiKey(key: string) {
+  return prisma.apiKey.findUnique({
+    where: { key: key.trim() },
+    include: {
+      user: {
+        include: {
+          subscription: {
+            include: {
+              plan: true,
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
+// In-memory cache of API key lookups (key + user + subscription + plan) so the
+// auth path stops hitting the DB on every request. Invalidated on admin changes.
+const lookupCache = new Map<
+  string,
+  { record: Awaited<ReturnType<typeof loadApiKey>>; expiresAt: number }
+>();
+const LOOKUP_CACHE_TTL_MS = 30 * 1000;
+const MAX_LOOKUP_ENTRIES = 500;
+
+export function invalidateApiKeyCache() {
+  lookupCache.clear();
+}
+
 export function generateApiKey(isTest = false): { fullKey: string; keyPrefix: string } {
   const prefix = isTest ? "np_test_" : "np_live_";
   const randomBytes = crypto.randomBytes(24).toString("hex");
@@ -92,21 +122,19 @@ export async function authenticateApiKey(
     };
   }
 
-  // Find API key in database
-  const apiKeyRecord = await prisma.apiKey.findUnique({
-    where: { key: key.trim() },
-    include: {
-      user: {
-        include: {
-          subscription: {
-            include: {
-              plan: true,
-            },
-          },
-        },
-      },
-    },
-  });
+  // Find API key in database, cached to avoid a round trip per request
+  const trimmedKey = key.trim();
+  let cachedLookup = lookupCache.get(trimmedKey);
+  if (!cachedLookup || cachedLookup.expiresAt <= Date.now()) {
+    const record = await loadApiKey(trimmedKey);
+    cachedLookup = { record, expiresAt: Date.now() + LOOKUP_CACHE_TTL_MS };
+    lookupCache.set(trimmedKey, cachedLookup);
+    if (lookupCache.size > MAX_LOOKUP_ENTRIES) {
+      const oldestKey = lookupCache.keys().next().value as string;
+      lookupCache.delete(oldestKey);
+    }
+  }
+  const apiKeyRecord = cachedLookup.record;
 
   if (!apiKeyRecord) {
     return {
@@ -160,6 +188,23 @@ export async function authenticateApiKey(
   }
 
   const user = apiKeyRecord.user;
+
+  if (user.isActive === false) {
+    return {
+      errorResponse: new Response(
+        JSON.stringify({
+          success: false,
+          error: "AccountDeactivated",
+          message: "This account has been deactivated. Contact support for assistance.",
+          documentation_url: "/",
+        }),
+        {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        }
+      ),
+    };
+  }
   const sub = user.subscription;
   const plan = sub?.plan;
 

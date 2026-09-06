@@ -6,6 +6,11 @@ import { bsToAd, getTodayDate } from "@/lib/nepcalendarscrape/converter";
 import { syncMonthCalendar } from "@/lib/scraper/reconciler";
 import { getActiveCalendarSource } from "@/lib/settings";
 
+// A month's payload only changes when an admin syncs/overrides data, so a short
+// in-memory cache makes repeated calendar-navigation hits nearly instant.
+const payloadCache = new Map<string, { payload: unknown; expiresAt: number }>();
+const PAYLOAD_TTL_MS = 60 * 1000;
+
 export async function GET(req: NextRequest) {
   const startTime = Date.now();
   const { auth, errorResponse } = await authenticateApiKey(req);
@@ -35,6 +40,27 @@ export async function GET(req: NextRequest) {
   const daysInMonth = monthLengths[monthBs - 1];
   const monthMeta = BS_MONTHS[monthBs - 1];
   const source = await getActiveCalendarSource();
+
+  const cacheKey = `${source}:${yearBs}-${monthBs}`;
+  const cached = payloadCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) {
+    const duration = Date.now() - startTime;
+    if (auth) {
+      logApiUsage(
+        auth.apiKey.id,
+        "/api/v1/calendar/month",
+        "GET",
+        200,
+        duration,
+        req.headers.get("x-forwarded-for") || undefined,
+        req.headers.get("user-agent") || undefined
+      );
+    }
+    return withRateLimitHeaders(
+      NextResponse.json({ success: true, data: cached.payload }),
+      auth?.rateLimit
+    );
+  }
 
   // Check if month exists in DB for the active source
   let dbDates = await prisma.calendarDate.findMany({
@@ -170,26 +196,30 @@ export async function GET(req: NextRequest) {
     );
   }
 
+  const data = {
+    year_bs: yearBs,
+    year_bs_np: toDevanagari(yearBs),
+    month_bs: monthBs,
+    month_name_np: monthMeta.nameNp,
+    month_name_en: monthMeta.nameEn,
+    days_in_month: daysInMonth,
+    start_day_of_week: startDayOfWeek,
+    weekday_headers: WEEKDAYS.map((w) => ({
+      day_index: w.dayIndex,
+      name_np: w.nameNp,
+      name_en: w.nameEn,
+      short_np: w.shortNp,
+      short_en: w.shortEn,
+    })),
+    days,
+  };
+
+  payloadCache.set(cacheKey, { payload: data, expiresAt: Date.now() + PAYLOAD_TTL_MS });
+
   return withRateLimitHeaders(
     NextResponse.json({
       success: true,
-      data: {
-        year_bs: yearBs,
-        year_bs_np: toDevanagari(yearBs),
-        month_bs: monthBs,
-        month_name_np: monthMeta.nameNp,
-        month_name_en: monthMeta.nameEn,
-        days_in_month: daysInMonth,
-        start_day_of_week: startDayOfWeek,
-        weekday_headers: WEEKDAYS.map((w) => ({
-          day_index: w.dayIndex,
-          name_np: w.nameNp,
-          name_en: w.nameEn,
-          short_np: w.shortNp,
-          short_en: w.shortEn,
-        })),
-        days,
-      },
+      data,
     }),
     auth?.rateLimit
   );

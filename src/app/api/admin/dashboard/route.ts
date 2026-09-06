@@ -63,7 +63,7 @@ export async function GET(req: NextRequest) {
     prisma.apiUsageLog.aggregate({ _avg: { responseTimeMs: true } }),
     prisma.apiUsageLog.findMany({
       orderBy: { timestamp: "desc" },
-      take: 25,
+      take: 4,
       include: {
         apiKey: {
           select: {

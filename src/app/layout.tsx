@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import { LanguageProvider } from "@/components/LanguageProvider";
 
 
@@ -52,15 +53,7 @@ export default function RootLayout({
         <LanguageProvider>
         <Navbar />
         <main className="flex-1">{children}</main>
-        <footer className="border-t border-accent/20 bg-neutral py-8 text-center text-sm text-primary/80">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-primary">Miti API</span>
-              <span>—</span>
-              <span>Bikram Sambat (वि.सं.) Developer Platform</span>
-            </div>
-          </div>
-        </footer>
+        <Footer />
               </LanguageProvider>
       </body>
     </html>

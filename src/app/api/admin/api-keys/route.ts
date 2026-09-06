@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { generateApiKey } from "@/lib/auth/api-key";
+import { generateApiKey, invalidateApiKeyCache } from "@/lib/auth/api-key";
 import { verifyToken } from "@/lib/auth/jwt";
 
 function requireAdmin(req: NextRequest) {
@@ -117,6 +117,8 @@ export async function DELETE(req: NextRequest) {
   if (!id) return NextResponse.json({ success: false, message: "id required" }, { status: 400 });
 
   await prisma.apiKey.delete({ where: { id } });
+
+  invalidateApiKeyCache();
 
   return NextResponse.json({ success: true, message: "API key revoked" });
 }

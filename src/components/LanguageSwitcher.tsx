@@ -35,13 +35,13 @@ export default function LanguageSwitcher({ className = "" }: { className?: strin
             onClick={() => { setLang('np'); setIsOpen(false); }}
             className={`w-full text-left px-4 py-2.5 text-xs font-semibold transition-colors ${lang === 'np' ? 'bg-primary/10 text-primary' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
           >
-            🇳🇵 Nepali
+            Nepali
           </button>
           <button 
             onClick={() => { setLang('en'); setIsOpen(false); }}
             className={`w-full text-left px-4 py-2.5 text-xs font-semibold transition-colors ${lang === 'en' ? 'bg-primary/10 text-primary' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
           >
-            🇺🇸 English
+            English
           </button>
         </div>
       )}
