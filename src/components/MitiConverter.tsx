@@ -87,8 +87,8 @@ export default function MitiConverter() {
   const days = Array.from({ length: mode === "BS_TO_AD" ? 32 : 31 }, (_, i) => i + 1);
 
   return (
-    <div className="bg-[#f8f9fa] font-sans pt-8 pb-28 md:pb-20">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+    <div className="bg-transparent font-sans pt-6 pb-20">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         {/* Page Title */}
         <div>
           <h1 className="text-[28px] font-bold text-slate-900">{lang === "np" ? "मिति रूपान्तरण" : "Miti Converter"}</h1>
@@ -98,31 +98,31 @@ export default function MitiConverter() {
         </div>
 
         {/* Main Content Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <div className="bg-white rounded-3xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] border border-slate-100/50 p-6 md:p-8">
           <div className="space-y-6">
             {/* Date Header & Toggle */}
-            <div className="flex items-center justify-between">
-              <span className="font-semibold text-slate-700">{lang === "np" ? "मिति" : "Date"}</span>
-              <div className="flex bg-white border border-slate-300 rounded-lg overflow-hidden text-sm font-medium">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <span className="font-bold text-slate-900 text-lg">{lang === "np" ? "मिति चयन गर्नुहोस्" : "Select Date"}</span>
+              <div className="flex bg-slate-100/80 p-1 rounded-xl text-sm font-bold">
                 <button
                   onClick={() => handleModeToggle("BS_TO_AD")}
-                  className={`px-4 py-1.5 transition-colors ${
+                  className={`px-6 py-2 rounded-lg transition-all ${
                     mode === "BS_TO_AD"
-                      ? "bg-primary text-white"
-                      : "text-slate-600 hover:bg-slate-50"
+                      ? "bg-white text-primary shadow-sm"
+                      : "text-slate-500 hover:text-slate-700"
                   }`}
                 >
-                  BS
+                  Bikram Sambat
                 </button>
                 <button
                   onClick={() => handleModeToggle("AD_TO_BS")}
-                  className={`px-4 py-1.5 transition-colors ${
+                  className={`px-6 py-2 rounded-lg transition-all ${
                     mode === "AD_TO_BS"
-                      ? "bg-primary text-white"
-                      : "text-slate-600 hover:bg-slate-50"
+                      ? "bg-white text-primary shadow-sm"
+                      : "text-slate-500 hover:text-slate-700"
                   }`}
                 >
-                  AD
+                  Gregorian (AD)
                 </button>
               </div>
             </div>
