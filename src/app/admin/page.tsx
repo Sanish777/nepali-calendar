@@ -82,17 +82,56 @@ function KpiCard({
   accent?: boolean;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-      <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-        {label}
+    <div className="bg-white rounded-3xl p-6 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] border border-slate-100/50 flex flex-col justify-between hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.06)] transition-shadow duration-300">
+      <div className="flex items-center justify-between">
+        <div className="text-[13px] font-semibold text-slate-500 uppercase tracking-wide">
+          {label}
+        </div>
       </div>
-      <div
-        className={`mt-2 text-2xl font-extrabold ${accent ? "text-primary" : "text-slate-900"}`}
-      >
-        {typeof value === "number" ? value.toLocaleString() : value ?? 0}
+      <div className="mt-5 flex items-end justify-between">
+        <div className={`text-4xl font-extrabold tracking-tight ${accent ? 'text-primary' : 'text-slate-900'}`}>
+          {typeof value === "number" ? value.toLocaleString() : value ?? 0}
+        </div>
+        {sub && (
+          <div className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg mb-1.5">
+            {sub}
+          </div>
+        )}
       </div>
-      {sub && <div className="text-[11px] text-slate-500 mt-1">{sub}</div>}
     </div>
+  );
+}
+
+
+function NavItem({
+  active,
+  icon,
+  label,
+  collapsed,
+  onClick
+}: {
+  active: boolean;
+  icon: React.ReactNode;
+  label: string;
+  collapsed: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 group ${
+        collapsed ? "justify-center" : "text-left"
+      } ${
+        active
+          ? "bg-white/15 text-white shadow-sm"
+          : "text-white/60 hover:bg-white/5 hover:text-white"
+      }`}
+    >
+      <div className={`${active ? 'text-white' : 'text-white/50 group-hover:text-white/90'} transition-colors`}>
+        {icon}
+      </div>
+      {!collapsed && <span>{label}</span>}
+    </button>
   );
 }
 
@@ -577,228 +616,145 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa]">
+    <div className="flex h-screen bg-[#F8FAFC] overflow-hidden font-sans">
+      {/* Modern SaaS Sidebar */}
+      <aside className={`w-64 bg-primary text-white border-none flex flex-col z-40 flex-shrink-0 transition-all duration-1000 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${sidebarOpen ? "translate-x-0 absolute inset-y-0 left-0 shadow-2xl" : "-translate-x-full absolute lg:relative lg:translate-x-0"} ${sidebarCollapsed ? "lg:w-20" : "lg:w-64"}`}>
+        {/* Edge Toggle Button */}
+        <button 
+          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          className="hidden lg:flex absolute -right-3.5 top-6 w-7 h-7 bg-primary rounded-full items-center justify-center text-white shadow-md shadow-primary/40 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/60 hover:scale-110 transition-all duration-300 z-50 border border-white/20"
+        >
+          <Menu className="w-3.5 h-3.5" />
+        </button>
 
-      {/* Red Top Navbar */}
-      <nav className="sticky top-0 z-50 bg-primary text-white shadow-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-[56px]">
-            {/* Left: Menu toggle + Logo */}
-            <div className="flex items-center gap-2.5">
-              <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="lg:hidden p-1.5 rounded-lg hover:bg-white/20 -ml-1"
-                aria-label="Toggle navigation"
-              >
-                <Menu className="w-5 h-5 text-white" />
-              </button>
-              <Link href="/" className="flex items-center gap-2 group transition-opacity hover:opacity-90">
-                <div className="h-[28px] md:h-[32px] flex items-center justify-center">
-                  <img src="/logo_nav_gold.png" alt="Miti Logo" className="h-full w-auto object-contain" />
-                </div>
-                <span className="font-extrabold text-[14px] tracking-tight text-white/90 hidden sm:block ml-1 border-l border-white/20 pl-2">
-                  Admin
-                </span>
-              </Link>
+        {/* Sidebar Header */}
+        <div className="h-20 flex items-center px-6 border-b border-white/10 shrink-0 relative overflow-hidden">
+          <Link href="/" className={`flex items-center gap-3 group w-full ${sidebarCollapsed ? 'justify-center' : 'justify-start'}`}>
+            <img 
+              src={sidebarCollapsed ? "/logo_icon.png" : "/logo_horizontal_gold.png"}
+              alt="Miti Logo" 
+              className={`object-contain drop-shadow-sm transition-transform duration-1000 flex-shrink-0 ${sidebarCollapsed ? 'h-8 w-8 rotate-0 group-hover:rotate-[15deg]' : 'h-9 w-auto rotate-0'}`} 
+            />
+            
+            <div 
+              className={`flex items-center gap-2 overflow-hidden transition-all duration-1000 ease-[cubic-bezier(0.34,1.56,0.64,1)] flex-shrink-0 ${
+                sidebarCollapsed 
+                  ? 'w-0 opacity-0 -translate-x-8 -rotate-12 scale-50' 
+                  : 'w-[100px] opacity-100 translate-x-0 rotate-0 scale-100'
+              }`}
+            >
+               <span className="text-white/30 text-2xl font-light mb-0.5">|</span>
+               <span className="font-extrabold text-xl tracking-tight text-white whitespace-nowrap">Admin</span>
             </div>
+          </Link>
+          {!sidebarCollapsed && (
+            <button onClick={() => setSidebarOpen(false)} className="lg:hidden absolute right-4 p-1 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+              <XCircle className="w-5 h-5" />
+            </button>
+          )}
+        </div>
+        
+        {/* Sidebar Links */}
+        <div className="flex-1 overflow-y-auto py-5 px-3 space-y-1.5 scrollbar-hide">
+          <div className={`text-[10px] font-bold text-white/40 uppercase tracking-wider mb-3 px-2 ${sidebarCollapsed ? 'text-center' : ''}`}>
+            {sidebarCollapsed ? '•' : 'Overview'}
+          </div>
+          <NavItem active={activeTab === "dashboard"} onClick={() => { setActiveTab("dashboard"); setSidebarOpen(false); }} icon={<BarChart3 className="w-4 h-4" />} label="Dashboard" collapsed={sidebarCollapsed} />
+          <NavItem active={activeTab === "calendar"} onClick={() => { setActiveTab("calendar"); setSidebarOpen(false); }} icon={<Calendar className="w-4 h-4" />} label="Interactive Calendar" collapsed={sidebarCollapsed} />
+          <NavItem active={activeTab === "view"} onClick={() => { setActiveTab("view"); setSidebarOpen(false); }} icon={<BookOpen className="w-4 h-4" />} label="View Calendar" collapsed={sidebarCollapsed} />
+          <NavItem active={activeTab === "converter"} onClick={() => { setActiveTab("converter"); setSidebarOpen(false); }} icon={<ArrowRightLeft className="w-4 h-4" />} label="Converter" collapsed={sidebarCollapsed} />
+          <NavItem active={activeTab === "events"} onClick={() => { setActiveTab("events"); setSidebarOpen(false); }} icon={<Sparkles className="w-4 h-4" />} label="Events & Festivals" collapsed={sidebarCollapsed} />
+          
+          <div className={`text-[10px] font-bold text-white/40 uppercase tracking-wider mt-6 mb-3 px-2 ${sidebarCollapsed ? 'text-center' : ''}`}>
+            {sidebarCollapsed ? '•' : 'Management'}
+          </div>
+          <NavItem active={activeTab === "users"} onClick={() => { setActiveTab("users"); setSidebarOpen(false); }} icon={<Users className="w-4 h-4" />} label="Users" collapsed={sidebarCollapsed} />
+          <NavItem active={activeTab === "keys"} onClick={() => { setActiveTab("keys"); setSidebarOpen(false); }} icon={<Key className="w-4 h-4" />} label="API Keys" collapsed={sidebarCollapsed} />
+          <NavItem active={activeTab === "scraper"} onClick={() => { setActiveTab("scraper"); setSidebarOpen(false); }} icon={<RefreshCw className="w-4 h-4" />} label="Scraper Center" collapsed={sidebarCollapsed} />
+          
+          <div className={`text-[10px] font-bold text-white/40 uppercase tracking-wider mt-6 mb-3 px-2 ${sidebarCollapsed ? 'text-center' : ''}`}>
+            {sidebarCollapsed ? '•' : 'System'}
+          </div>
+          <NavItem active={activeTab === "settings"} onClick={() => { setActiveTab("settings"); setSidebarOpen(false); }} icon={<Settings className="w-4 h-4" />} label="Settings" collapsed={sidebarCollapsed} />
+        </div>
+        
 
-            {/* Right: Date pill + user profile */}
-            <div className="flex items-center gap-3">
-              {/* Date pill */}
-              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-black/10 rounded-md border border-white/10 text-xs font-semibold text-white">
-                <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse shadow-[0_0_8px_rgba(74,222,128,0.8)]"></span>
-                <span className="font-np">{todayString}</span>
-              </div>
+      </aside>
 
-              {/* User profile */}
-              <div className="relative">
+      {/* Main Content Wrapper */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+        {/* Top Header */}
+        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-6 shrink-0 z-30">
+          <div className="flex items-center gap-4">
+             <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-xl transition -ml-2">
+               <Menu className="w-5 h-5" />
+             </button>
+             <h1 className="text-xl font-bold text-slate-900 tracking-tight hidden sm:block capitalize">
+               {activeTab === 'view' ? 'View Calendar' : activeTab === 'keys' ? 'API Keys' : activeTab}
+             </h1>
+          </div>
+          
+          <div className="flex items-center gap-3 sm:gap-5">
+             {/* Global Search */}
+             <div className="hidden md:flex relative group">
+                <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
+                <input type="text" placeholder="Search everywhere..." className="pl-10 pr-4 py-2 w-56 lg:w-72 bg-slate-100/50 hover:bg-slate-100 border border-slate-200/60 rounded-full text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all placeholder:font-normal" />
+             </div>
+             
+             {/* Date Pill */}
+             <div className="hidden lg:flex items-center gap-2.5 px-3 py-1.5 bg-white rounded-full border border-slate-200 shadow-sm text-xs font-semibold text-slate-600">
+               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+               <span className="font-np">{todayString}</span>
+             </div>
+             
+             <div className="w-px h-6 bg-slate-200 mx-1 hidden sm:block"></div>
+             
+             {/* Profile */}
+             <div className="relative">
                 <button
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
-                  className="flex items-center gap-2.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl transition"
+                  className="flex items-center gap-3 p-1 pr-3 bg-white hover:bg-slate-50 border border-slate-200 rounded-full transition-all shadow-sm"
                 >
-                  <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm">
+                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm shadow-inner">
                     {adminUser.name.charAt(0)}
                   </div>
                   <div className="text-left hidden sm:block">
-                    <div className="text-xs font-bold text-white leading-tight">{adminUser.name}</div>
-                    <div className="text-[10px] text-red-100 leading-tight">{adminUser.email}</div>
+                    <div className="text-xs font-bold text-slate-700 leading-tight">{adminUser.name}</div>
+                    <div className="text-[10px] font-medium text-slate-500 leading-tight">Administrator</div>
                   </div>
                 </button>
 
                 {showProfileMenu && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden z-50">
-                    <button
-                      onClick={() => {
-                        setShowProfileMenu(false);
-                        setShowProfileModal(true);
-                      }}
-                      className="w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-white/50 border-b border-slate-100"
-                    >
-                      Profile Settings
-                    </button>
-                    <button
-                      onClick={handleLogout}
-                      className="w-full text-left px-4 py-3 text-sm font-semibold text-rose-600 hover:bg-primary/10"
-                    >
-                      Log Out
-                    </button>
+                  <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/50">
+                      <p className="text-sm font-bold text-slate-900">{adminUser.name}</p>
+                      <p className="text-xs text-slate-500 truncate">{adminUser.email}</p>
+                    </div>
+                    <div className="p-1.5">
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          setShowProfileModal(true);
+                        }}
+                        className="w-full text-left px-3 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition"
+                      >
+                        Profile Settings
+                      </button>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full text-left px-3 py-2 text-sm font-semibold text-rose-600 hover:bg-rose-50 rounded-xl transition"
+                      >
+                        Log Out
+                      </button>
+                    </div>
                   </div>
                 )}
-              </div>
-            </div>
+             </div>
           </div>
-        </div>
-      </nav>
-
-      {/* Page Body */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Left Sidebar */}
-          <div
-            className={`${sidebarCollapsed ? "lg:w-24" : "lg:w-72"} w-full flex-shrink-0 space-y-6 ${
-              sidebarOpen ? "" : "hidden lg:block"
-            }`}
-          >
-          {/* Navigation Menu */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-3 shadow-sm flex flex-col gap-1">
-            <button
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="hidden lg:flex items-center justify-center px-4 py-1.5 text-slate-400 hover:bg-white/50 rounded-xl transition mb-1"
-              title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            >
-              {sidebarCollapsed ? <ChevronsRight className="w-4 h-4" /> : <ChevronsLeft className="w-4 h-4" />}
-            </button>
-
-            <button
-              onClick={() => setActiveTab("dashboard")}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition ${
-                sidebarCollapsed ? "justify-center" : "text-left"
-              } ${
-                activeTab === "dashboard"
-                  ? "bg-primary text-white shadow-md shadow-red-900/10"
-                  : "text-slate-600 hover:bg-white/50"
-              }`}
-            >
-              <BarChart3 className="w-4 h-4" />
-              {!sidebarCollapsed && <span>Dashboard</span>}
-            </button>
-
-            <button
-              onClick={() => { setActiveTab("calendar"); setSidebarOpen(false); }}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition ${
-                sidebarCollapsed ? "justify-center" : "text-left"
-              } ${
-                activeTab === "calendar"
-                  ? "bg-primary text-white shadow-md shadow-red-900/10"
-                  : "text-slate-600 hover:bg-white/50"
-              }`}
-            >
-              <Calendar className="w-4 h-4" />
-              {!sidebarCollapsed && <span>Interactive Calendar</span>}
-            </button>
-
-            <button
-              onClick={() => { setActiveTab("view"); setSidebarOpen(false); }}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition ${
-                sidebarCollapsed ? "justify-center" : "text-left"
-              } ${
-                activeTab === "view"
-                  ? "bg-primary text-white shadow-md shadow-red-900/10"
-                  : "text-slate-600 hover:bg-white/50"
-              }`}
-            >
-              <BookOpen className="w-4 h-4" />
-              {!sidebarCollapsed && <span>View Calendar</span>}
-            </button>
-
-            <button
-              onClick={() => { setActiveTab("converter"); setSidebarOpen(false); }}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition ${
-                sidebarCollapsed ? "justify-center" : "text-left"
-              } ${
-                activeTab === "converter"
-                  ? "bg-primary text-white shadow-md shadow-red-900/10"
-                  : "text-slate-600 hover:bg-white/50"
-              }`}
-            >
-              <ArrowRightLeft className="w-4 h-4" />
-              {!sidebarCollapsed && <span>Converter</span>}
-            </button>
-
-            <button
-              onClick={() => { setActiveTab("events"); setSidebarOpen(false); }}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition ${
-                sidebarCollapsed ? "justify-center" : "text-left"
-              } ${
-                activeTab === "events"
-                  ? "bg-primary text-white shadow-md shadow-red-900/10"
-                  : "text-slate-600 hover:bg-white/50"
-              }`}
-            >
-              <Sparkles className="w-4 h-4" />
-              {!sidebarCollapsed && <span>Events & Festivals</span>}
-            </button>
-
-            <button
-              onClick={() => { setActiveTab("users"); setSidebarOpen(false); }}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition ${
-                sidebarCollapsed ? "justify-center" : "text-left"
-              } ${
-                activeTab === "users"
-                  ? "bg-primary text-white shadow-md shadow-red-900/10"
-                  : "text-slate-600 hover:bg-white/50"
-              }`}
-            >
-              <Users className="w-4 h-4" />
-              {!sidebarCollapsed && <span>Users</span>}
-            </button>
-
-            <button
-              onClick={() => { setActiveTab("settings"); setSidebarOpen(false); }}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition ${
-                sidebarCollapsed ? "justify-center" : "text-left"
-              } ${
-                activeTab === "settings"
-                  ? "bg-primary text-white shadow-md shadow-red-900/10"
-                  : "text-slate-600 hover:bg-white/50"
-              }`}
-            >
-              <Settings className="w-4 h-4" />
-              {!sidebarCollapsed && <span>Settings</span>}
-            </button>
-
-            <button
-              onClick={() => { setActiveTab("scraper"); setSidebarOpen(false); }}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition ${
-                sidebarCollapsed ? "justify-center" : "text-left"
-              } ${
-                activeTab === "scraper"
-                  ? "bg-primary text-white shadow-md shadow-red-900/10"
-                  : "text-slate-600 hover:bg-white/50"
-              }`}
-            >
-              <RefreshCw className="w-4 h-4" />
-              {!sidebarCollapsed && <span>Scraper Center</span>}
-            </button>
-
-            <button
-              onClick={() => { setActiveTab("keys"); setSidebarOpen(false); }}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition ${
-                sidebarCollapsed ? "justify-center" : "text-left"
-              } ${
-                activeTab === "keys"
-                  ? "bg-primary text-white shadow-md shadow-red-900/10"
-                  : "text-slate-600 hover:bg-white/50"
-              }`}
-            >
-              <Key className="w-4 h-4" />
-              {!sidebarCollapsed && <span>API Keys</span>}
-            </button>
-          </div>
-        </div>
-
-        {/* Main Content Area */}
-        <div className="flex-1 min-w-0">
+        </header>
+        
+        {/* Scrollable Main Area */}
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-[#F8FAFC]">
           {/* TAB: Dashboard */}
           {activeTab === "dashboard" &&
             (() => {
@@ -849,7 +805,7 @@ export default function AdminPage() {
 
                       {/* Charts */}
                       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                        <div className="xl:col-span-2 bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                        <div className="xl:col-span-2 bg-white rounded-3xl border border-slate-100/50 p-7 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)]">
                           <div className="flex items-center justify-between">
                             <h3 className="text-sm font-bold text-slate-900">
                               Requests per Day
@@ -869,10 +825,10 @@ export default function AdminPage() {
                                   className="flex-1 flex flex-col items-center justify-end h-full group"
                                 >
                                   <div
-                                    className={`w-full rounded-t-md transition-all ${
+                                    className={`w-full rounded-full transition-all ${
                                       d.requests > 0
-                                        ? "bg-primary/80 group-hover:bg-primary"
-                                        : "bg-slate-100"
+                                        ? "bg-primary/80 hover:bg-primary"
+                                        : "bg-slate-100/50"
                                     }`}
                                     style={{
                                       height: `${Math.max((d.requests / maxDay) * 100, d.requests > 0 ? 6 : 2)}%`,
@@ -888,7 +844,7 @@ export default function AdminPage() {
                           </div>
                         </div>
 
-                        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                        <div className="bg-white rounded-3xl border border-slate-100/50 p-7 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)]">
                           <h3 className="text-sm font-bold text-slate-900">Top Endpoints</h3>
                           {byEndpoint.length === 0 ? (
                             <p className="text-xs text-slate-400 mt-6">No usage yet.</p>
@@ -905,7 +861,7 @@ export default function AdminPage() {
                                       {e.requests.toLocaleString()}
                                     </span>
                                   </div>
-                                  <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                  <div className="h-1.5 bg-slate-100/50 rounded-full overflow-hidden">
                                     <div
                                       className="h-full bg-primary rounded-full"
                                       style={{ width: `${(e.requests / maxEndpoint) * 100}%` }}
@@ -2102,9 +2058,8 @@ export default function AdminPage() {
             </div>
           )}
 
-        </div>
+        </main>
       </div>
-    </div>
     </div>
   );
 }
