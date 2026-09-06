@@ -51,13 +51,13 @@ interface CalendarData {
 }
 
 const WEEKDAYS = [
-  { en: 'Sun', np: 'आइत' },
-  { en: 'Mon', np: 'सोम' },
-  { en: 'Tue', np: 'मंगल' },
-  { en: 'Wed', np: 'बुध' },
-  { en: 'Thu', np: 'बिहि' },
-  { en: 'Fri', np: 'शुक्र' },
-  { en: 'Sat', np: 'शनि' }
+  { en: 'Sunday', np: 'आइतबार' },
+  { en: 'Monday', np: 'सोमबार' },
+  { en: 'Tuesday', np: 'मंगलबार' },
+  { en: 'Wednesday', np: 'बुधबार' },
+  { en: 'Thursday', np: 'बिहिबार' },
+  { en: 'Friday', np: 'शुक्रबार' },
+  { en: 'Saturday', np: 'शनिबार' }
 ];
 
 export default function NepCalendarScrape() {
@@ -156,6 +156,21 @@ export default function NepCalendarScrape() {
     setSelectedDayBs(prev => (prev === dayBs ? null : dayBs));
   };
 
+  const getOverlapString = () => {
+    if (!data || !data.days || data.days.length === 0) return '';
+    const ENG_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const firstDay = data.days[0];
+    const lastDay = data.days[data.days.length - 1];
+    
+    const firstMonthStr = ENG_MONTHS[firstDay.month_ad - 1];
+    const lastMonthStr = ENG_MONTHS[lastDay.month_ad - 1];
+    
+    if (firstDay.year_ad !== lastDay.year_ad) {
+       return `${firstMonthStr} ${firstDay.year_ad} / ${lastMonthStr} ${lastDay.year_ad}`;
+    }
+    return `${firstMonthStr} / ${lastMonthStr} ${firstDay.year_ad}`;
+  };
+
   const getEventsToDisplay = (): CalendarEvent[] => {
     if (!data) return [];
     
@@ -207,23 +222,13 @@ export default function NepCalendarScrape() {
             <div className="flex items-center gap-4 w-full sm:w-auto justify-center sm:justify-start">
               <div className="flex flex-col text-center sm:text-left">
                 {lang === 'np' ? (
-                  <>
                     <h2 className="text-xl md:text-2xl font-semibold text-slate-900 font-np tracking-normal">
-                      {data ? `${data.year_bs_np} ${data.month_name_np}` : '...'}
+                      {data ? `${data.month_name_np} · ${getOverlapString()}` : '...'}
                     </h2>
-                    <p className="text-[11px] font-medium text-slate-400 uppercase tracking-widest mt-0.5">
-                      {data ? `${data.year_bs} ${data.month_name_en}` : '...'}
-                    </p>
-                  </>
                 ) : (
-                  <>
                     <h2 className="text-xl md:text-2xl font-semibold text-slate-900 tracking-normal">
-                      {data ? `${data.year_bs} ${data.month_name_en}` : '...'}
+                      {data ? `${data.month_name_en} · ${getOverlapString()}` : '...'}
                     </h2>
-                    <p className="text-[11px] font-medium text-slate-400 font-np tracking-widest mt-0.5">
-                      {data ? `${data.year_bs_np} ${data.month_name_np}` : '...'}
-                    </p>
-                  </>
                 )}
               </div>
             </div>
@@ -278,18 +283,10 @@ export default function NepCalendarScrape() {
               {/* Weekdays Header */}
               <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50">
                 {WEEKDAYS.map((day, idx) => (
-                  <div key={idx} className={`text-center py-2.5 md:py-3 border-r last:border-r-0 border-slate-200 ${idx === 6 ? 'text-accent' : 'text-slate-600'}`}>
-                    {lang === 'np' ? (
-                      <>
-                        <div className="font-medium font-np text-sm md:text-base">{day.np}</div>
-                        <div className="text-[10px] md:text-xs uppercase opacity-80">{day.en}</div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="font-medium text-sm md:text-base">{day.en}</div>
-                        <div className="text-[10px] md:text-xs uppercase opacity-80 font-np">{day.np}</div>
-                      </>
-                    )}
+                  <div key={idx} className={`text-center py-3 md:py-4 border-r last:border-r-0 border-slate-200 ${idx === 6 ? 'text-accent' : 'text-slate-600'}`}>
+                    <div className={`font-medium text-xs md:text-sm truncate px-1 ${lang === 'np' ? 'font-np' : ''}`}>
+                      {lang === 'np' ? day.np : day.en}
+                    </div>
                   </div>
                 ))}
               </div>
