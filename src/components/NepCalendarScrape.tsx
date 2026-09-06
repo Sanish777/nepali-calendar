@@ -166,9 +166,9 @@ export default function NepCalendarScrape() {
     const lastMonthStr = ENG_MONTHS[lastDay.month_ad - 1];
     
     if (firstDay.year_ad !== lastDay.year_ad) {
-       return `${firstMonthStr} ${firstDay.year_ad} / ${lastMonthStr} ${lastDay.year_ad}`;
+       return `${firstMonthStr} ${firstDay.year_ad}/${lastMonthStr} ${lastDay.year_ad}`;
     }
-    return `${firstMonthStr} / ${lastMonthStr} ${firstDay.year_ad}`;
+    return `${firstMonthStr}/${lastMonthStr} ${firstDay.year_ad}`;
   };
 
   const getEventsToDisplay = (): CalendarEvent[] => {
@@ -220,14 +220,28 @@ export default function NepCalendarScrape() {
           <div className="bg-white px-5 py-4 md:px-6 md:py-5 flex flex-col sm:flex-row items-center justify-between border-b border-slate-100/80 gap-4">
             
             <div className="flex items-center gap-4 w-full sm:w-auto justify-center sm:justify-start">
-              <div className="flex flex-col text-center sm:text-left">
+              <div className="flex flex-col text-center sm:text-left w-full">
                 {lang === 'np' ? (
-                    <h2 className="text-xl md:text-2xl font-semibold text-slate-900 font-np tracking-normal">
-                      {data ? `${data.month_name_np} · ${getOverlapString()}` : '...'}
+                    <h2 className="flex items-baseline justify-center sm:justify-start gap-2 md:gap-3">
+                      <span className="text-xl md:text-2xl font-semibold text-slate-900 font-np">
+                        {data ? `${data.month_name_np} ${data.year_bs_np}` : '...'}
+                      </span>
+                      {data && (
+                        <span className="text-[13px] md:text-sm font-normal text-slate-500">
+                          {getOverlapString()}
+                        </span>
+                      )}
                     </h2>
                 ) : (
-                    <h2 className="text-xl md:text-2xl font-semibold text-slate-900 tracking-normal">
-                      {data ? `${data.month_name_en} · ${getOverlapString()}` : '...'}
+                    <h2 className="flex items-baseline justify-center sm:justify-start gap-2 md:gap-3">
+                      <span className="text-xl md:text-2xl font-semibold text-slate-900">
+                        {data ? `${data.month_name_en} ${data.year_bs}` : '...'}
+                      </span>
+                      {data && (
+                        <span className="text-[13px] md:text-sm font-normal text-slate-500">
+                          {getOverlapString()}
+                        </span>
+                      )}
                     </h2>
                 )}
               </div>
