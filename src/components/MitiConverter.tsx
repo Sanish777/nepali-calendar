@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { ArrowRightLeft, Calendar, Clock } from "lucide-react";
+import { ArrowRightLeft, Calendar, Clock, ChevronDown } from "lucide-react";
 import { useLanguage } from "@/components/LanguageProvider";
 
 const bsMonths = [
@@ -129,45 +129,54 @@ export default function MitiConverter() {
 
             {/* Date Selector Row */}
             <div className="flex flex-col md:flex-row gap-4">
-              <select
-                value={year}
-                onChange={(e) => setYear(Number(e.target.value))}
-                className="flex-1 pl-4 pr-10 py-3 bg-white border border-slate-300 rounded-lg outline-none focus:border-primary focus:ring-1 focus:ring-primary text-slate-800 text-[15px] font-medium font-sans cursor-pointer"
-              >
-                {years.map((y) => (
-                  <option key={y} value={y}>{y}</option>
-                ))}
-              </select>
+              <div className="relative flex-1">
+                <select
+                  value={year}
+                  onChange={(e) => setYear(Number(e.target.value))}
+                  className="w-full pl-4 pr-10 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-slate-800 text-[15px] font-medium font-sans cursor-pointer appearance-none shadow-sm transition-all"
+                >
+                  {years.map((y) => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
+                <ChevronDown className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              </div>
 
-              <select
-                value={month}
-                onChange={(e) => setMonth(Number(e.target.value))}
-                className="flex-1 pl-4 pr-10 py-3 bg-white border border-slate-300 rounded-lg outline-none focus:border-primary focus:ring-1 focus:ring-primary text-slate-800 text-[15px] font-medium font-sans cursor-pointer"
-              >
-                {months.map((m) => (
-                  <option key={m.value} value={m.value}>{m.label}</option>
-                ))}
-              </select>
+              <div className="relative flex-1">
+                <select
+                  value={month}
+                  onChange={(e) => setMonth(Number(e.target.value))}
+                  className="w-full pl-4 pr-10 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-slate-800 text-[15px] font-medium font-sans cursor-pointer appearance-none shadow-sm transition-all"
+                >
+                  {months.map((m) => (
+                    <option key={m.value} value={m.value}>{m.label}</option>
+                  ))}
+                </select>
+                <ChevronDown className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              </div>
 
-              <select
-                value={day}
-                onChange={(e) => setDay(Number(e.target.value))}
-                className="flex-1 pl-4 pr-10 py-3 bg-white border-2 border-primary rounded-lg outline-none focus:border-primary focus:ring-1 focus:ring-primary text-slate-800 text-[15px] font-medium font-sans cursor-pointer"
-              >
-                {days.map((d) => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </select>
+              <div className="relative flex-1">
+                <select
+                  value={day}
+                  onChange={(e) => setDay(Number(e.target.value))}
+                  className="w-full pl-4 pr-10 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-slate-800 text-[15px] font-medium font-sans cursor-pointer appearance-none shadow-sm transition-all"
+                >
+                  {days.map((d) => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </select>
+                <ChevronDown className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              </div>
             </div>
 
             {/* Results Cards */}
             <div className="flex flex-col md:flex-row gap-6 pt-2">
               {/* BS Result */}
-              <div className="flex-1 bg-[#fef5f5] rounded-xl p-5 md:p-6 border border-[#fbeaea]">
-                <div className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">
+              <div className="flex-1 bg-primary/5 rounded-2xl p-5 md:p-6 border border-primary/10 relative overflow-hidden">
+                <div className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-3">
                   Bikram Sambat
                 </div>
-                <div className="text-2xl md:text-[28px] font-bold text-primary mb-1">
+                <div className="text-2xl md:text-3xl font-extrabold text-slate-900 mb-1 tracking-tight">
                   {result ? `${result.bs.monthNameEn} ${result.bs.day}, ${result.bs.year}` : "..."}
                 </div>
                 <div className="text-slate-600 text-sm font-medium">
@@ -176,11 +185,11 @@ export default function MitiConverter() {
               </div>
 
               {/* AD Result */}
-              <div className="flex-1 bg-[#fef5f5] rounded-xl p-5 md:p-6 border border-[#fbeaea]">
-                <div className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">
+              <div className="flex-1 bg-primary/5 rounded-2xl p-5 md:p-6 border border-primary/10 relative overflow-hidden">
+                <div className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-3">
                   Gregorian (AD)
                 </div>
-                <div className="text-2xl md:text-[28px] font-bold text-primary mb-1">
+                <div className="text-2xl md:text-3xl font-extrabold text-slate-900 mb-1 tracking-tight">
                   {result ? `${adMonths[result.ad.month - 1]?.label} ${result.ad.day}, ${result.ad.year}` : "..."}
                 </div>
                 <div className="text-slate-600 text-sm font-medium">
