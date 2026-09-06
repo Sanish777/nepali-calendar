@@ -451,7 +451,7 @@ export default function NepCalendarScrape() {
             <div className="divide-y divide-slate-100 xl:max-h-[800px] overflow-y-auto">
               {displayEvents.length > 0 ? (
                 displayEvents.map((event: any, idx) => (
-                  <div key={`${event.id}-${idx}`} className={`group px-3.5 md:px-5 py-3 md:py-4 hover:bg-slate-50/90 transition-colors flex items-center gap-3 md:gap-4`}>
+                  <div key={`${event.id}-${idx}`} className={`group px-3.5 md:px-5 py-3 md:py-4 hover:bg-slate-50/90 transition-colors flex items-center gap-3 md:gap-4 ${event.diff_days === 0 ? 'bg-secondary/10' : ''}`}>
                     <div className={`w-[52px] md:w-14 shrink-0 flex flex-col items-center rounded-xl py-2 ${event.is_public_holiday ? 'bg-accent text-white' : 'bg-primary text-secondary-light'}`}>
                       <span className={`text-base md:text-lg font-bold leading-none ${lang === 'np' ? 'font-np' : ''}`}>
                         {lang === 'np' ? event.day_bs_np : String(event.day_bs)}

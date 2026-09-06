@@ -106,7 +106,7 @@ export default function Navbar() {
               <span>{todayString}</span>
             </div>
 
-            <LanguageSwitcher className="hidden sm:block" />
+            <LanguageSwitcher />
 
             {user && (
               <div className="relative">
