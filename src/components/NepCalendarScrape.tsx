@@ -139,6 +139,18 @@ export default function NepCalendarScrape() {
     setYearBs(newYear);
   };
 
+  
+  const handleToday = () => {
+    fetch(`/api/v1/calendar/today?api_key=${API_KEY}`)
+      .then(res => res.json())
+      .then(json => {
+        if (json.success) {
+          setYearBs(json.data.bs.year);
+          setMonthBs(json.data.bs.month);
+        }
+      });
+  };
+
   const handleDayClick = (dayBs: number) => {
     setSelectedDayBs(prev => (prev === dayBs ? null : dayBs));
   };
@@ -183,62 +195,64 @@ export default function NepCalendarScrape() {
 
   return (
     <div className="w-full font-sans">
-      <div className="w-full space-y-8">
+      <div className="w-full flex flex-col xl:flex-row gap-6 xl:gap-8 items-start">
         
         {/* Main Calendar Card */}
-        <main className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <main className="flex-1 min-w-0 w-full bg-white rounded-3xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] border border-slate-100/50 overflow-hidden">
           
           {/* Header Controls */}
-          <div className="bg-primary text-white p-4 md:p-5 flex items-center justify-between">
-            <button 
-              onClick={handlePrevMonth}
-              className="p-2 rounded-full hover:bg-white/10 transition-colors"
-            >
-              <ChevronLeft className="w-6 h-6" />
-            </button>
+          <div className="bg-white px-5 py-4 md:px-6 md:py-5 flex flex-col sm:flex-row items-center justify-between border-b border-slate-100/80 gap-4">
             
-            <div className="text-center">
-              {lang === 'np' ? (
-                <>
-                  <h2 className="text-2xl md:text-3xl font-bold font-np tracking-wide">
-                    {data ? `${data.year_bs_np} ${data.month_name_np}` : '...'}
-                  </h2>
-                  <p className="text-xs md:text-sm font-medium text-secondary-light uppercase tracking-widest mt-0.5">
-                    {data ? `${data.year_bs} ${data.month_name_en}` : '...'}
-                  </p>
-                </>
-              ) : (
-                <>
-                  <h2 className="text-2xl md:text-3xl font-bold tracking-wide">
-                    {data ? `${data.year_bs} ${data.month_name_en}` : '...'}
-                  </h2>
-                  <p className="text-xs md:text-sm font-medium text-secondary-light tracking-widest mt-0.5">
-                    {data ? `${data.year_bs_np} ${data.month_name_np}` : '...'}
-                  </p>
-                </>
-              )}
+            <div className="flex items-center gap-4 w-full sm:w-auto justify-center sm:justify-start">
+              <div className="flex flex-col text-center sm:text-left">
+                {lang === 'np' ? (
+                  <>
+                    <h2 className="text-2xl md:text-[28px] font-extrabold text-slate-900 font-np tracking-tight">
+                      {data ? `${data.year_bs_np} ${data.month_name_np}` : '...'}
+                    </h2>
+                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                      {data ? `${data.year_bs} ${data.month_name_en}` : '...'}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-2xl md:text-[28px] font-extrabold text-slate-900 tracking-tight">
+                      {data ? `${data.year_bs} ${data.month_name_en}` : '...'}
+                    </h2>
+                    <p className="text-[11px] font-bold text-slate-400 font-np tracking-widest mt-0.5">
+                      {data ? `${data.year_bs_np} ${data.month_name_np}` : '...'}
+                    </p>
+                  </>
+                )}
+              </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <div className="flex text-[11px] md:text-xs font-bold rounded-full bg-white/15 overflow-hidden">
-                <button
-                  onClick={() => setLang('np')}
-                  className={`px-2.5 py-1 transition-colors ${lang === 'np' ? 'bg-white text-primary' : 'text-white hover:bg-white/10'} font-np`}
-                >
-                  नेपा
-                </button>
-                <button
-                  onClick={() => setLang('en')}
-                  className={`px-2.5 py-1 transition-colors ${lang === 'en' ? 'bg-white text-primary' : 'text-white hover:bg-white/10'}`}
-                >
-                  EN
-                </button>
-              </div>
+            <div className="flex items-center bg-slate-50 border border-slate-200 rounded-lg p-1 w-full sm:w-auto justify-between sm:justify-center">
+              <button 
+                onClick={handlePrevMonth}
+                className="p-1.5 md:p-2 rounded-md text-slate-500 hover:text-primary hover:bg-white transition-colors hover:shadow-sm"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              
+              <div className="w-px h-5 bg-slate-200 mx-1"></div>
+              
+              <button 
+                onClick={() => {
+                  handleToday();
+                }}
+                className={`px-4 py-1.5 md:py-2 text-[13px] font-bold rounded-md transition-colors hover:bg-white hover:text-primary hover:shadow-sm ${lang === 'np' ? 'font-np' : ''} text-slate-600 flex-1 sm:flex-none text-center`}
+              >
+                {lang === 'np' ? 'आज' : 'Today'}
+              </button>
+              
+              <div className="w-px h-5 bg-slate-200 mx-1"></div>
+
               <button 
                 onClick={handleNextMonth}
-                className="p-2 rounded-full hover:bg-white/10 transition-colors"
+                className="p-1.5 md:p-2 rounded-md text-slate-500 hover:text-primary hover:bg-white transition-colors hover:shadow-sm"
               >
-                <ChevronRight className="w-6 h-6" />
+                <ChevronRight className="w-5 h-5" />
               </button>
             </div>
           </div>
@@ -354,7 +368,7 @@ export default function NepCalendarScrape() {
 
         {/* Events Section */}
         {data && (
-          <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <section className="w-full xl:w-[420px] shrink-0 flex flex-col bg-white rounded-3xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] border border-slate-100/50 overflow-hidden">
             <div className="p-4 md:p-5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-slate-600" />
@@ -386,7 +400,7 @@ export default function NepCalendarScrape() {
               )}
             </div>
             
-            <div className="divide-y divide-slate-100 max-h-[600px] overflow-y-auto">
+            <div className="divide-y divide-slate-100 xl:max-h-[800px] overflow-y-auto">
               {displayEvents.length > 0 ? (
                 displayEvents.map((event: any, idx) => (
                   <div key={`${event.id}-${idx}`} className="p-4 md:p-5 hover:bg-slate-50 transition-colors flex flex-col md:flex-row md:items-center gap-3 md:gap-6">

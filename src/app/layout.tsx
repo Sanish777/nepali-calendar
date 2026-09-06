@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import { LanguageProvider } from "@/components/LanguageProvider";
+
 
 export const metadata: Metadata = {
   title: "Miti API & Developer Platform",
@@ -47,6 +49,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col bg-neutral text-primary pattern-bg selection:bg-secondary selection:text-primary">
+        <LanguageProvider>
         <Navbar />
         <main className="flex-1">{children}</main>
         <footer className="border-t border-accent/20 bg-neutral py-8 text-center text-sm text-primary/80">
@@ -58,6 +61,7 @@ export default function RootLayout({
             </div>
           </div>
         </footer>
+              </LanguageProvider>
       </body>
     </html>
   );

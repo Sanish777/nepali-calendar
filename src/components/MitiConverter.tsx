@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { ArrowRightLeft, Calendar, Clock } from "lucide-react";
+import { useLanguage } from "@/components/LanguageProvider";
 
 const bsMonths = [
   { value: 1, label: "Baisakh" },
@@ -26,6 +27,7 @@ const adMonths = [
 type Mode = "BS_TO_AD" | "AD_TO_BS";
 
 export default function MitiConverter() {
+  const { lang, t } = useLanguage();
   const [mode, setMode] = useState<Mode>("BS_TO_AD");
 
   // Input states
@@ -89,7 +91,7 @@ export default function MitiConverter() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         {/* Page Title */}
         <div>
-          <h1 className="text-[28px] font-bold text-slate-900">Miti Converter</h1>
+          <h1 className="text-[28px] font-bold text-slate-900">{lang === "np" ? "मिति रूपान्तरण" : "Miti Converter"}</h1>
           <p className="text-slate-500 text-[15px] mt-1">
             Instantly convert between Bikram Sambat and Gregorian (AD) dates.
           </p>
@@ -100,7 +102,7 @@ export default function MitiConverter() {
           <div className="space-y-6">
             {/* Date Header & Toggle */}
             <div className="flex items-center justify-between">
-              <span className="font-semibold text-slate-700">Date</span>
+              <span className="font-semibold text-slate-700">{lang === "np" ? "मिति" : "Date"}</span>
               <div className="flex bg-white border border-slate-300 rounded-lg overflow-hidden text-sm font-medium">
                 <button
                   onClick={() => handleModeToggle("BS_TO_AD")}

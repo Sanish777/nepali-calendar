@@ -4,8 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Calendar, Shield, BookOpen, RefreshCw } from "lucide-react";
+import LanguageSwitcher from "./LanguageSwitcher";
+import { useLanguage } from "./LanguageProvider";
+
 
 export default function Navbar() {
+  const { t } = useLanguage();
   const pathname = usePathname();
   const [todayString, setTodayString] = useState("वि.सं. ...");
   const [user, setUser] = useState<any>(null);
@@ -92,6 +96,8 @@ export default function Navbar() {
               <span>{todayString}</span>
             </div>
 
+            <LanguageSwitcher className="hidden sm:block" />
+
             {user && (
               <div className="relative">
                 <button
@@ -136,7 +142,7 @@ export default function Navbar() {
             }`}
           >
             <Calendar className={`w-5 h-5 ${pathname === "/" ? "fill-primary/10" : ""}`} />
-            <span className="text-[10px] font-semibold">Calendar</span>
+            <span className="text-[10px] font-semibold">{t("calendar")}</span>
           </Link>
           <Link
             href="/converter"
@@ -145,7 +151,7 @@ export default function Navbar() {
             }`}
           >
             <RefreshCw className={`w-5 h-5 ${pathname.startsWith("/converter") ? "fill-primary/10" : ""}`} />
-            <span className="text-[10px] font-semibold">Converter</span>
+            <span className="text-[10px] font-semibold">{t("converter")}</span>
           </Link>
         </div>
       </div>
