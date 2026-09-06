@@ -1,4 +1,5 @@
-import { BS_CALENDAR_DATA, BS_MONTHS, WEEKDAYS, toDevanagari } from "./bs-data";
+import { BS_MONTHS, WEEKDAYS, toDevanagari } from "./bs-data";
+import { getBsMonthLengths } from "./bs-registry";
 
 export interface BSDateResult {
   year: number;
@@ -139,7 +140,7 @@ export function getBsYearStartAdDate(bsYear: number): Date {
 
   if (bsYear > currentYear) {
     while (currentYear < bsYear) {
-      const monthLengths = BS_CALENDAR_DATA[currentYear] ?? [31, 31, 32, 31, 31, 30, 30, 30, 29, 30, 30, 30];
+      const monthLengths = getBsMonthLengths(currentYear);
       const totalDays = monthLengths.reduce((a, b) => a + b, 0);
       currentDate = new Date(currentDate.getTime() + totalDays * 86400000);
       currentYear++;
@@ -147,7 +148,7 @@ export function getBsYearStartAdDate(bsYear: number): Date {
   } else {
     while (currentYear > bsYear) {
       currentYear--;
-      const monthLengths = BS_CALENDAR_DATA[currentYear] ?? [31, 31, 32, 31, 31, 30, 30, 30, 29, 30, 30, 30];
+      const monthLengths = getBsMonthLengths(currentYear);
       const totalDays = monthLengths.reduce((a, b) => a + b, 0);
       currentDate = new Date(currentDate.getTime() - totalDays * 86400000);
     }
@@ -164,10 +165,9 @@ export function bsToAd(bsYear: number, bsMonth: number, bsDay: number): {
   ad: ADDateResult;
   verification_status: string;
 } {
-  const monthLengths = BS_CALENDAR_DATA[bsYear];
-  if (!monthLengths) {
-    throw new Error(`BS Year ${bsYear} is outside the supported range (2000-2090)`);
-  }
+  // Lengths are looked up dynamically (learned years included), so new BS
+  // years work without editing reference tables.
+  const monthLengths = getBsMonthLengths(bsYear);
   if (bsMonth < 1 || bsMonth > 12) {
     throw new Error(`Invalid BS Month ${bsMonth}. Must be 1-12.`);
   }
@@ -250,7 +250,7 @@ export function adToBs(adYear: number, adMonth: number, adDay: number): {
   }
 
   const diffDays = Math.round((targetDate.getTime() - anchor.getTime()) / 86400000);
-  const monthLengths = BS_CALENDAR_DATA[approxBsYear] ?? [31, 31, 32, 31, 31, 30, 30, 30, 29, 30, 30, 30];
+  const monthLengths = getBsMonthLengths(approxBsYear)
 
   let remainingDays = diffDays;
   let bsMonth = 1;

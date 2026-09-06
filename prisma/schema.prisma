@@ -209,3 +209,16 @@ model ScraperJobLog {
   startedAt    DateTime  @default(now())
   completedAt  DateTime?
 }
+
+// Learned/verified BS calendar metadata, harvested from upstream calendars so
+// new BS years work without code changes. Populated by the scraper; read by the
+// BS->AD converter (via bs-registry) to extend the hardcoded reference data.
+model ScraperCalendarMeta {
+  bsYear         Int      @id
+  monthLengths   Int[] // 12 entries, one per BS month
+  monthNames     String[] // canonical index_nep.php month= spellings, 12 entries
+  source         String   @default("NEPCALENDARSCRAPE")
+  verifiedFrom   String? // e.g. upstream page URL/format
+  lastVerifiedAt DateTime @default(now())
+  createdAt      DateTime @default(now())
+}

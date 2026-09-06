@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { syncMonthCalendar } from "@/lib/scraper/reconciler";
 import { getTodayDate } from "@/lib/nepcalendarscrape/converter";
+import { isBsYearKnown, loadLearnedYears } from "@/lib/nepcalendarscrape/bs-registry";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(req: NextRequest) {
@@ -24,6 +25,9 @@ export async function GET(req: NextRequest) {
   }
 
   try {
+    // Hydrate learned BS years/spellings from the database.
+    await loadLearnedYears();
+
     const today = getTodayDate();
     const currentYear = today.bs.year;
     const currentMonth = today.bs.month;
@@ -38,6 +42,24 @@ export async function GET(req: NextRequest) {
       { yearBs: currentYear, monthBs: currentMonth, source: "NEPCALENDARSCRAPE" as const },
       { yearBs: nextYear, monthBs: nextMonth, source: "NEPCALENDARSCRAPE" as const },
     ];
+
+    // Yearly auto-sweep: when the live BS year is not in the hardcoded
+    // reference table (a brand-new year), scrape and learn all 12 months so
+    // the new year works with zero code changes. Runs until the year is known.
+    const needsYearSweep = !isBsYearKnown(currentYear) || currentYear > 2090;
+    let yearSweep: { success: boolean; error?: string }[] = [];
+    if (needsYearSweep) {
+      const swept = await Promise.allSettled(
+        Array.from({ length: 12 }, (_, i) => ({
+          yearBs: currentYear,
+          monthBs: i + 1,
+          source: "NEPCALENDARSCRAPE" as const,
+        })).map((t) => syncMonthCalendar(t))
+      );
+      yearSweep = swept.map((r) =>
+        r.status === "fulfilled" ? r.value : { success: false, error: r.reason?.message || String(r.reason) }
+      );
+    }
 
     // Sync independently so one source failing (e.g. anti-bot) never blocks others
     const settled = await Promise.allSettled(
@@ -68,6 +90,7 @@ export async function GET(req: NextRequest) {
       message: "Scheduled cron sync executed successfully.",
       timestamp: new Date().toISOString(),
       results,
+      yearSweep,
       cleanup: {
         apiUsageLogDeleted: usageDeleted.count,
         scraperJobLogDeleted: jobDeleted.count,

@@ -158,16 +158,27 @@ export async function syncMonthCalendar(options: ReconcileOptions): Promise<Reco
           for (const ev of day.events) {
             if (!ev.titleNp && !ev.titleEn) continue;
 
-            let calEvent = await prisma.calendarEvent.findFirst({
-              where: {
-                source,
-                bsYear: day.yearBs,
-                bsMonth: day.monthBs,
-                bsDay: day.dayBs,
-                titleNp: ev.titleNp,
-                titleEn: ev.titleEn,
-              },
-            });
+            // Match by English title (older scrapes stored the Latin title in titleNp
+            // too), then heal the Nepali title in place instead of creating duplicates.
+            let calEvent = ev.titleEn
+              ? await prisma.calendarEvent.findFirst({
+                  where: {
+                    source,
+                    bsYear: day.yearBs,
+                    bsMonth: day.monthBs,
+                    bsDay: day.dayBs,
+                    titleEn: ev.titleEn,
+                  },
+                })
+              : await prisma.calendarEvent.findFirst({
+                  where: {
+                    source,
+                    bsYear: day.yearBs,
+                    bsMonth: day.monthBs,
+                    bsDay: day.dayBs,
+                    titleNp: ev.titleNp,
+                  },
+                });
 
             if (!calEvent) {
               calEvent = await prisma.calendarEvent.create({
@@ -189,6 +200,13 @@ export async function syncMonthCalendar(options: ReconcileOptions): Promise<Reco
                 },
               });
               eventsSynced++;
+            } else if (calEvent.titleNp !== ev.titleNp && /[ऀ-ॿ]/.test(ev.titleNp)) {
+              // Only heal with a Devanagari title so a future Latin scrape can
+              // never downgrade an already-Nepali title back to transliteration.
+              calEvent = await prisma.calendarEvent.update({
+                where: { id: calEvent.id },
+                data: { titleNp: ev.titleNp },
+              });
             }
 
             // Link to CalendarDate
