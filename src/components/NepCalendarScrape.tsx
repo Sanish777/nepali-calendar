@@ -367,8 +367,14 @@ export default function NepCalendarScrape() {
         </main>
 
         {/* Events Section */}
-        {data && (
-          <section className="w-full xl:w-[420px] shrink-0 flex flex-col bg-white rounded-3xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] border border-slate-100/50 overflow-hidden">
+        {/* Events Section */}
+        <section className="w-full xl:w-[420px] shrink-0 flex flex-col bg-white rounded-3xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] border border-slate-100/50 overflow-hidden min-h-[500px]">
+          {loading || !data ? (
+            <div className="flex-1 flex flex-col items-center justify-center bg-slate-50/50">
+              <MitiLoader className="w-8 h-8 opacity-50" />
+            </div>
+          ) : (
+            <>
             <div className="p-4 md:p-5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-slate-600" />
@@ -428,8 +434,9 @@ export default function NepCalendarScrape() {
                 </div>
               )}
             </div>
+            </>
+          )}
           </section>
-        )}
       </div>
     </div>
   );
