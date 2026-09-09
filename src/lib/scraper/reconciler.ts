@@ -68,7 +68,7 @@ export async function syncMonthCalendar(options: ReconcileOptions): Promise<Reco
         const holidayReason = ov?.holidayReason
           ? ov.holidayReason
           : "events" in day && Array.isArray(day.events)
-            ? (day.events.find((e: any) => e.isHoliday)?.titleEn || (day.dayOfWeek === 6 ? "Saturday Weekend" : undefined))
+            ? (day.events.find((e) => e.isHoliday)?.titleEn || (day.dayOfWeek === 6 ? "Saturday Weekend" : undefined))
             : day.dayOfWeek === 6
               ? "Saturday Weekend"
               : undefined;
@@ -160,25 +160,22 @@ export async function syncMonthCalendar(options: ReconcileOptions): Promise<Reco
 
             // Match by English title (older scrapes stored the Latin title in titleNp
             // too), then heal the Nepali title in place instead of creating duplicates.
-            let calEvent = ev.titleEn
-              ? await prisma.calendarEvent.findFirst({
-                  where: {
-                    source,
-                    bsYear: day.yearBs,
-                    bsMonth: day.monthBs,
-                    bsDay: day.dayBs,
-                    titleEn: ev.titleEn,
-                  },
-                })
-              : await prisma.calendarEvent.findFirst({
-                  where: {
-                    source,
-                    bsYear: day.yearBs,
-                    bsMonth: day.monthBs,
-                    bsDay: day.dayBs,
-                    titleNp: ev.titleNp,
-                  },
-                });
+            // All matches are healed, not just the first: duplicate rows left by
+            // older scrapers can otherwise hide a dirty Latin twin behind a clean one.
+            const candidates = await prisma.calendarEvent.findMany({
+              where: {
+                source,
+                bsYear: day.yearBs,
+                bsMonth: day.monthBs,
+                bsDay: day.dayBs,
+                ...(ev.titleEn ? { titleEn: ev.titleEn } : { titleNp: ev.titleNp }),
+              },
+              orderBy: { id: "asc" },
+            });
+
+            let calEvent = candidates.length
+              ? candidates.find((c) => /[ऀ-ॿ]/.test(c.titleNp)) ?? candidates[0]
+              : null;
 
             if (!calEvent) {
               calEvent = await prisma.calendarEvent.create({
@@ -200,13 +197,38 @@ export async function syncMonthCalendar(options: ReconcileOptions): Promise<Reco
                 },
               });
               eventsSynced++;
-            } else if (calEvent.titleNp !== ev.titleNp && /[ऀ-ॿ]/.test(ev.titleNp)) {
-              // Only heal with a Devanagari title so a future Latin scrape can
-              // never downgrade an already-Nepali title back to transliteration.
-              calEvent = await prisma.calendarEvent.update({
-                where: { id: calEvent.id },
-                data: { titleNp: ev.titleNp },
-              });
+            } else {
+              // Heal any match whose Nepali title is missing or still Latin,
+              // but never downgrade a Devanagari title back to transliteration.
+              const staleIds = candidates
+                .filter((c) => c.titleNp !== ev.titleNp && !/[ऀ-ॿ]/.test(c.titleNp))
+                .map((c) => c.id);
+              if (staleIds.length && /[ऀ-ॿ]/.test(ev.titleNp)) {
+                await prisma.calendarEvent.updateMany({
+                  where: { id: { in: staleIds } },
+                  data: { titleNp: ev.titleNp },
+                });
+              }
+            }
+
+            // Dedupe exact-copy leftovers so a day never carries twin rows.
+            const fresh = await prisma.calendarEvent.findMany({
+              where: {
+                source,
+                bsYear: day.yearBs,
+                bsMonth: day.monthBs,
+                bsDay: day.dayBs,
+                ...(calEvent!.titleEn ? { titleEn: calEvent!.titleEn } : { titleNp: calEvent!.titleNp }),
+              },
+              orderBy: { id: "asc" },
+            });
+            const dupIds = fresh
+              .filter(
+                (c) => c.id !== calEvent!.id && c.titleEn === calEvent!.titleEn && c.titleNp === calEvent!.titleNp
+              )
+              .map((c) => c.id);
+            if (dupIds.length) {
+              await prisma.calendarEvent.deleteMany({ where: { id: { in: dupIds } } });
             }
 
             // Link to CalendarDate
@@ -297,12 +319,12 @@ export async function syncMonthCalendar(options: ReconcileOptions): Promise<Reco
       eventsSynced,
       message: `Successfully synchronized ${daysSynced} dates and ${eventsSynced} events for BS ${yearBs}-${monthBs} [${source}]`,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     await prisma.scraperJobLog.update({
       where: { id: jobLog.id },
       data: {
         status: "FAILED",
-        errorDetails: error?.message || String(error),
+        errorDetails: error instanceof Error ? error.message : String(error),
         completedAt: new Date(),
       },
     });

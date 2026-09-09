@@ -152,6 +152,39 @@ function stripTags(input: string): string {
   return input.replace(/<[^>]*>/g, " ").replace(/\s{2,}/g, " ").trim();
 }
 
+/** Decode HTML numeric + common named entities (old site pages serve Nepali
+ *  text as &#NNNN; entities). Left raw when nothing matched. */
+function decodeHtmlEntities(input: string): string {
+  const NAMED: Record<string, string> = {
+    amp: "&",
+    lt: "<",
+    gt: ">",
+    quot: '"',
+    apos: "'",
+    nbsp: " ",
+  };
+  return input.replace(
+    /&(?:#(\d+)|#x([0-9a-fA-F]+)|([a-zA-Z]+));/g,
+    (full, dec: string | undefined, hex: string | undefined, name: string | undefined) => {
+      if (dec) {
+        try {
+          return String.fromCodePoint(parseInt(dec, 10));
+        } catch {
+          return full;
+        }
+      }
+      if (hex) {
+        try {
+          return String.fromCodePoint(parseInt(hex, 16));
+        } catch {
+          return full;
+        }
+      }
+      return name && name in NAMED ? NAMED[name] : full;
+    }
+  );
+}
+
 export function parseCells(html: string): ParsedCell[] {
   const cells: ParsedCell[] = [];
   const regex =
@@ -174,8 +207,8 @@ export function parseCells(html: string): ParsedCell[] {
     cells.push({
       bsDay,
       eday: isNaN(eday) ? 0 : eday,
-      tithiEn: stripTags(tithiEn),
-      festEn: stripTags(festEn),
+      tithiEn: decodeHtmlEntities(stripTags(tithiEn)),
+      festEn: decodeHtmlEntities(stripTags(festEn)),
       isRed: dashiFont === "red" || ndayFont === "red" || festFont === "red" || /Holiday/i.test(festEn),
     });
   }
@@ -366,19 +399,26 @@ export async function scrapeNepCalendarScrapeMonth(
     const conv = bsToAd(yearBs, monthBs, d);
     const weekday = WEEKDAYS[conv.ad.dayOfWeek];
 
+    // Deterministic Nepali tithi from the EN tithi when possible; the NP-page
+    // value only fills in when the EN cell lacks a tithi. Never emit Latin as
+    // a Nepali tithi.
     const tithiNp =
+      (cell && tithiEnToNp(cell.tithiEn)) ||
       npMerge.tithiByDay.get(d) ||
-      (cell ? tithiEnToNp(cell.tithiEn) || cell.tithiEn : "");
+      (cell?.tithiEn || "");
 
     const festNpRaw = npMerge.festByDay.get(d) || "";
     const festListEn = (cell?.festEn || "").split(",").map((s) => s.trim()).filter(Boolean);
     const festListNp = festNpRaw.split(",").map((s) => s.trim()).filter(Boolean);
 
-    const events = festListEn.map((titleEn, i) => ({
-      titleNp: festListNp[i] || titleEn,
-      titleEn,
-      isHoliday: Boolean(cell?.isRed),
-    }));
+    // Pair Nepali with English festival names index-wise. If a Nepali title is
+    // missing (NP page unreachable/blocked) drop the event rather than persist
+    // the Latin title as titleNp — a failed scrape must never corrupt the
+    // Nepali language view. Next successful sync restores full events.
+    const events = festListEn.flatMap((titleEn, i) => {
+      const titleNp = festListNp[i] || tithiEnToNp(titleEn);
+      return titleNp ? [{ titleNp, titleEn, isHoliday: Boolean(cell?.isRed) }] : [];
+    });
 
     days.push({
       yearBs,

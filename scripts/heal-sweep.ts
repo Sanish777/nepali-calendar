@@ -26,13 +26,19 @@ async function main() {
   let i = 0;
   for (const [ym, cnt] of months) {
     const [y, m] = ym.split("-").map(Number);
-    try {
-      const r = await syncMonthCalendar({ yearBs: y, monthBs: m, source: "NEPCALENDARSCRAPE" });
-      healed++;
-    } catch (e: any) {
-      failed++;
-      console.log(`FAILED ${ym}: ${e?.message}`);
+    let ok = false;
+    for (let attempt = 1; attempt <= 3 && !ok; attempt++) {
+      try {
+        await syncMonthCalendar({ yearBs: y, monthBs: m, source: "NEPCALENDARSCRAPE" });
+        ok = true;
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        console.log(`FAILED ${ym} (attempt ${attempt}/3): ${msg}`);
+        await new Promise((r) => setTimeout(r, 5000 * attempt));
+      }
     }
+    if (ok) healed++;
+    else failed++;
     i++;
     if (i % 5 === 0 || i === months.length) {
       console.log(`progress ${i}/${months.length} (healed=${healed} failed=${failed})`);
