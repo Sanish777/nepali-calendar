@@ -32,6 +32,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Menu,
+  Copy,
 } from "lucide-react";
 
 function Pager({
@@ -203,7 +204,10 @@ export default function AdminPage() {
     expiresAt: "",
   });
   const [keyMessage, setKeyMessage] = useState("");
+  const [generatedKey, setGeneratedKey] = useState<string | null>(null);
+  const [isCopied, setIsCopied] = useState(false);
   const [showKeyModal, setShowKeyModal] = useState(false);
+  const [isGeneratingKey, setIsGeneratingKey] = useState(false);
   const [usersOptionList, setUsersOptionList] = useState<any[]>([]);
 
   const fetchApiKeys = async () => {
@@ -274,7 +278,8 @@ export default function AdminPage() {
 
   const handleGenerateKey = async (e: React.FormEvent) => {
     e.preventDefault();
-    setKeyMessage("Generating...");
+    setKeyMessage("");
+    setIsGeneratingKey(true);
     try {
       const res = await fetch("/api/admin/api-keys", {
         method: "POST",
@@ -288,7 +293,10 @@ export default function AdminPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setKeyMessage(`Key generated successfully! Token: ${data.data.key} (Store this securely!)`);
+        setGeneratedKey(data.data.key);
+        setIsCopied(false);
+        setKeyMessage("");
+        setShowKeyModal(false);
         fetchApiKeys();
         fetchDashboard();
         setKeyForm({
@@ -297,15 +305,13 @@ export default function AdminPage() {
           customMonthlyLimit: "",
           expiresAt: "",
         });
-        setTimeout(() => {
-           setShowKeyModal(false);
-           setKeyMessage("");
-        }, 8000);
       } else {
         setKeyMessage(`Error: ${data.message}`);
       }
     } catch (err: any) {
       setKeyMessage(`Error: ${err.message}`);
+    } finally {
+      setIsGeneratingKey(false);
     }
   };
 
@@ -1168,8 +1174,43 @@ export default function AdminPage() {
               </div>
 
               {keyMessage && (
-                <div className="p-3 bg-emerald-50 text-emerald-700 rounded-md border border-emerald-100 font-mono text-xs">
+                <div className="p-3 bg-red-50 text-red-700 rounded-md border border-red-100 font-mono text-xs">
                   {keyMessage}
+                </div>
+              )}
+
+              {generatedKey && (
+                <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-100 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-emerald-800 text-sm mb-1">API Key Generated Successfully</h4>
+                      <p className="text-xs text-emerald-700/80">
+                        Please copy your API key now. For your security, it won't be shown again. If you lose it, you'll need to generate a new one.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setGeneratedKey(null)}
+                      className="text-emerald-500 hover:text-emerald-700 p-1"
+                    >
+                      <XCircle className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2 bg-white border border-emerald-200 rounded-lg p-2">
+                    <code className="flex-1 text-sm font-mono text-emerald-900 px-2 select-all break-all">
+                      {generatedKey}
+                    </code>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(generatedKey);
+                        setIsCopied(true);
+                        setTimeout(() => setIsCopied(false), 2000);
+                      }}
+                      className="flex items-center gap-1 px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded-md transition text-xs font-semibold"
+                    >
+                      {isCopied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                      {isCopied ? "Copied" : "Copy"}
+                    </button>
+                  </div>
                 </div>
               )}
 
@@ -2342,6 +2383,12 @@ export default function AdminPage() {
                   Key
                 </h3>
 
+                {keyMessage && (
+                  <div className="p-3 bg-red-50 text-red-700 rounded-md border border-red-100 font-mono text-xs">
+                    {keyMessage}
+                  </div>
+                )}
+
                 <form onSubmit={handleGenerateKey} className="space-y-4">
                   <div>
                     <label className="block text-[11px] font-semibold text-slate-500 mb-1">
@@ -2414,14 +2461,23 @@ export default function AdminPage() {
                       type="button"
                       onClick={() => setShowKeyModal(false)}
                       className="px-3 py-1.5 text-[11px] text-slate-600 hover:bg-slate-100 rounded-lg"
+                      disabled={isGeneratingKey}
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-1.5 text-[11px] font-semibold bg-primary hover:bg-primary/80 text-white rounded-lg transition"
+                      disabled={isGeneratingKey}
+                      className="px-4 py-1.5 text-[11px] font-semibold bg-primary hover:bg-primary/80 text-white rounded-lg transition disabled:opacity-50 flex items-center gap-2"
                     >
-                      Generate Key
+                      {isGeneratingKey ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        "Generate Key"
+                      )}
                     </button>
                   </div>
                 </form>
